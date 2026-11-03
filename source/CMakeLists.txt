@@ -2,6 +2,11 @@
 #
 # SPDX-License-Identifier: GPL-2.0-or-later
 
+if(BTRACE_GH AND MSVC)
+  add_compile_options(/Gh /GH)
+  link_libraries(bltrace)
+endif()
+
 if(WITH_LEGACY_OPENGL)
   add_definitions(-DWITH_LEGACY_OPENGL)
 endif()

@@ -2111,3 +2111,7 @@ endif()
 if(POSTINSTALL_SCRIPT)
   install(SCRIPT ${POSTINSTALL_SCRIPT})
 endif()
+
+if(BTRACE_GH AND MSVC)
+  target_link_libraries(blender PRIVATE bltrace)
+endif()

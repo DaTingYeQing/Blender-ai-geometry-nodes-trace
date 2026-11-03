@@ -205,6 +205,8 @@ endif()
 option(WITH_BLENDER "Build blender (disable to build only Cycles stand-alone)." ON)
 mark_as_advanced(WITH_BLENDER)
 
+option(BTRACE_GH "Instrument Blender's own code with MSVC /Gh (function-entry tracing)" ON)
+
 if(WIN32)
   option(WITH_BLENDER_THUMBNAILER "\
 Build \"BlendThumb.dll\" helper for Windows explorer integration to support extracting \
@@ -2691,6 +2693,11 @@ include(build_files/cmake/testing.cmake)
 # Add Sub-Directories
 
 if(WITH_BLENDER)
+  if(BTRACE_GH AND MSVC)
+    enable_language(ASM_MASM)
+    add_subdirectory(bltrace)
+  endif()
+
   add_subdirectory(intern)
   add_subdirectory(extern)
 
