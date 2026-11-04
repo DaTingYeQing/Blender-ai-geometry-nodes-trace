@@ -125,8 +125,8 @@ class BetweenCard(TranslationCard):
                 "return_edges": returns.get("meta", {}).get("return_edges"),
                 "return_edges_unmatched": returns.get("meta", {}).get(
                     "return_edges_unmatched"),
-                "edge_json": os.path.abspath(edge_path).replace("\\", "/"),
-                "return_json": os.path.abspath(return_path).replace("\\", "/"),
+                "edge_json": "edge.json",
+                "return_json": "return.json",
             },
             "between": between,
         }

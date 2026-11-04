@@ -16,15 +16,17 @@ import tempfile
 
 from cards.base import CardContext
 from cards.between import BetweenCard
+from cards.coverage import CoverageCard
 from cards.edge import EdgeCard
 from cards.returns import ReturnsCard
 from gates.calls import CallsGate
+from gates.coverage import CoverageGate
 from infra import blender as blender_lib
 from infra import manifest, paths, runkey, target as targetfile
 
 # Registration lives here. Add a module by importing it and appending one entry.
-GATES = [CallsGate()]
-CARDS = [EdgeCard(), ReturnsCard(), BetweenCard()]
+GATES = [CoverageGate(), CallsGate()]
+CARDS = [EdgeCard(), ReturnsCard(), BetweenCard(), CoverageCard()]
 
 
 def fail(message):

@@ -79,8 +79,8 @@ class ReturnsCard(TranslationCard):
 
         report = {
             "meta": {
-                "edge_json": os.path.abspath(edge_path).replace("\\", "/"),
-                "returns_bin": os.path.abspath(returns_bin).replace("\\", "/"),
+                "edge_json": "edge.json",
+                "returns_bin": os.path.basename(returns_bin),
                 "exe": os.path.abspath(ctx.blender).replace("\\", "/"),
                 "generated": time.strftime("%Y-%m-%d %H:%M:%S"),
                 "functions": len(funcs),
