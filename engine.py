@@ -10,16 +10,19 @@ only pass --eval and --node.
 import argparse
 import json
 import os
+import shutil
 import sys
 import tempfile
 
+from cards.base import CardContext
+from cards.edge import EdgeCard
 from gates.calls import CallsGate
 from infra import blender as blender_lib
 from infra import manifest, paths, runkey, target as targetfile
 
 # Registration lives here. Add a module by importing it and appending one entry.
 GATES = [CallsGate()]
-CARDS = []
+CARDS = [EdgeCard()]
 
 
 def fail(message):
@@ -91,7 +94,9 @@ def run(a):
     cmd = blender_lib.command(
         blender, eval_path, work_dir, a.node,
         blend=a.blend, obj=a.obj, mod=a.mod, param=a.param, gates=gate_specs)
-    blender_lib.run(cmd)
+    env = dict(os.environ)
+    env.setdefault("LLVM_PROFILE_FILE", "NUL")
+    blender_lib.run(cmd, env=env)
 
     status_path = os.path.join(work_dir, "status.json")
     status = None
@@ -119,7 +124,56 @@ def run(a):
     if not CARDS:
         print(">> 模块 2 完成：raw 已生成，翻译卡片尚未注册")
         return 0
-    return fail("翻译卡片尚未接线")
+
+    node_dir = os.path.dirname(run_dir)
+    os.makedirs(node_dir, exist_ok=True)
+    staging_dir = os.path.join(node_dir, ".%s.tmp" % hash8)
+    shutil.rmtree(staging_dir, ignore_errors=True)
+    os.makedirs(staging_dir)
+
+    ctx = CardContext(
+        work_dir, staging_dir, target, a.node, data, blender, pdb,
+        status.get("raw", {}))
+    available_raw = set(status.get("raw", {}))
+    products = set()
+    summaries = []
+    try:
+        for card in CARDS:
+            missing = []
+            for need in card.needs:
+                if need.startswith("raw:"):
+                    if need[4:] not in available_raw:
+                        missing.append(need)
+                elif need not in products:
+                    missing.append(need)
+            if missing:
+                raise RuntimeError(
+                    "card %s missing inputs: %s" % (card.name, missing))
+
+            summary = card.build(ctx)
+            if summary.get("output"):
+                products.add(summary["output"])
+            summaries.append(summary)
+
+        data["cards"] = summaries
+        data["products"] = {
+            item.get("name", "?"): item.get("output")
+            for item in summaries if item.get("output")
+        }
+        manifest.write(staging_dir, data)
+
+        if os.path.isdir(run_dir):
+            if not a.force:
+                raise RuntimeError("run dir appeared without --force: %s" % run_dir)
+            shutil.rmtree(run_dir)
+        os.replace(staging_dir, run_dir)
+    except Exception as exc:
+        shutil.rmtree(staging_dir, ignore_errors=True)
+        return fail("翻译失败: %s\n  work: %s" % (exc, work_dir))
+
+    print(">> products:", json.dumps(data["products"], ensure_ascii=False))
+    print(">> run dir :", run_dir)
+    return 0
 
 
 def main():
