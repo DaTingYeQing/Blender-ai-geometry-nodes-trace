@@ -212,6 +212,7 @@ class CoverageCard(TranslationCard):
             with open(path, "w", encoding="utf-8") as fh:
                 fh.write(dumps(result))
 
+            shutil.rmtree(temp_dir, ignore_errors=True)
             return {
                 "name": self.name,
                 "files": result["meta"]["file_count"],
@@ -222,5 +223,3 @@ class CoverageCard(TranslationCard):
         except Exception:
             print("!! coverage work dir kept:", temp_dir)
             raise
-        else:
-            shutil.rmtree(temp_dir, ignore_errors=True)
