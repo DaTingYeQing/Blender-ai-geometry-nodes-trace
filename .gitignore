@@ -1,7 +1,9 @@
 __pycache__/
 *.pyc
 out/
+cache/
 .test-out/
+.translate-out/
 *.profraw
 *.profdata
 cov_show.txt
