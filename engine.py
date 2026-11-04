@@ -15,6 +15,7 @@ import sys
 import tempfile
 
 from cards.base import CardContext
+from cards.between import BetweenCard
 from cards.edge import EdgeCard
 from cards.returns import ReturnsCard
 from gates.calls import CallsGate
@@ -23,7 +24,7 @@ from infra import manifest, paths, runkey, target as targetfile
 
 # Registration lives here. Add a module by importing it and appending one entry.
 GATES = [CallsGate()]
-CARDS = [EdgeCard(), ReturnsCard()]
+CARDS = [EdgeCard(), ReturnsCard(), BetweenCard()]
 
 
 def fail(message):
