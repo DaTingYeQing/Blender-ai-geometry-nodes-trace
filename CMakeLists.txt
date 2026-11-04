@@ -206,6 +206,7 @@ option(WITH_BLENDER "Build blender (disable to build only Cycles stand-alone)." 
 mark_as_advanced(WITH_BLENDER)
 
 option(BTRACE_GH "Instrument Blender's own code with MSVC /Gh (function-entry tracing)" ON)
+option(BTRACE_CLANG "Instrument clang-cl builds with -finstrument-functions-after-inlining" OFF)
 
 if(WIN32)
   option(WITH_BLENDER_THUMBNAILER "\
@@ -2693,9 +2694,15 @@ include(build_files/cmake/testing.cmake)
 # Add Sub-Directories
 
 if(WITH_BLENDER)
-  if(BTRACE_GH AND MSVC)
+  if(BTRACE_GH AND NOT CMAKE_CXX_COMPILER_ID MATCHES "Clang")
     enable_language(ASM_MASM)
     add_subdirectory(bltrace)
+  elseif(BTRACE_CLANG AND CMAKE_CXX_COMPILER_ID MATCHES "Clang")
+    add_subdirectory(bltrace)
+  endif()
+
+  if(WITH_COMPILER_CODE_COVERAGE)
+    add_subdirectory(covtrace)
   endif()
 
   add_subdirectory(intern)

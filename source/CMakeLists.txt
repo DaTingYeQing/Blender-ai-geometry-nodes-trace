@@ -2,8 +2,13 @@
 #
 # SPDX-License-Identifier: GPL-2.0-or-later
 
-if(BTRACE_GH AND MSVC)
+if(BTRACE_GH AND NOT CMAKE_CXX_COMPILER_ID MATCHES "Clang")
   add_compile_options(/Gh /GH)
+  link_libraries(bltrace)
+endif()
+
+if(BTRACE_CLANG AND CMAKE_CXX_COMPILER_ID MATCHES "Clang")
+  add_compile_options(/clang:-finstrument-functions-after-inlining)
   link_libraries(bltrace)
 endif()
 

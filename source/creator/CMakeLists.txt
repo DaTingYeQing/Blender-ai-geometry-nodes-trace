@@ -2112,6 +2112,12 @@ if(POSTINSTALL_SCRIPT)
   install(SCRIPT ${POSTINSTALL_SCRIPT})
 endif()
 
-if(BTRACE_GH AND MSVC)
+if((BTRACE_GH AND NOT CMAKE_CXX_COMPILER_ID MATCHES "Clang") OR
+   (BTRACE_CLANG AND CMAKE_CXX_COMPILER_ID MATCHES "Clang"))
   target_link_libraries(blender PRIVATE bltrace)
+endif()
+
+if(WITH_COMPILER_CODE_COVERAGE)
+  # covtrace_arm/dump live in the exe so cov.py can resolve them.
+  target_link_libraries(blender PRIVATE $<TARGET_OBJECTS:covtrace_obj>)
 endif()
