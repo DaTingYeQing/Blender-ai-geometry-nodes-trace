@@ -40,7 +40,7 @@ def classify(run_dir, key):
     return "duplicate" if data.get("run_key") == key else "conflict"
 
 
-def base(run_key, hash8, node, eval_path, blend, blender, pdb):
+def base(run_key, hash8, node, eval_path, blend, blender, pdb, options=None):
     return {
         "schema": 1,
         "run_key": run_key,
@@ -50,6 +50,7 @@ def base(run_key, hash8, node, eval_path, blend, blender, pdb):
         "blend": paths.norm(blend),
         "blender": paths.norm(blender),
         "pdb": paths.norm(pdb),
+        "options": options or {},
         "created": time.strftime("%Y-%m-%d %H:%M:%S"),
         "gates": {},
         "cards": {},

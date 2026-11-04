@@ -114,6 +114,23 @@ class BetweenCard(TranslationCard):
             if name in by_name
         ]
 
+        boundary = {
+            "meta": {
+                "node": ctx.node,
+                "node_resolved": resolved,
+                "start": len(start),
+                "finally": len(final),
+                "edge_json": "edge.json",
+                "return_json": "return.json",
+            },
+            "start": sorted(start),
+            "finally": sorted(final),
+        }
+        boundary_path = ctx.out("boundary.json")
+        with open(boundary_path, "w", encoding="utf-8") as fh:
+            json.dump(boundary, fh, ensure_ascii=False, indent=1)
+            fh.write("\n")
+
         report = {
             "meta": {
                 "node": ctx.node,
@@ -143,5 +160,6 @@ class BetweenCard(TranslationCard):
             "start": len(start),
             "finally": len(final),
             "between": len(between),
+            "boundary": "boundary.json",
             "output": "between.json",
         }

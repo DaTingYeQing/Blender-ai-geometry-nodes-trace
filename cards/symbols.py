@@ -118,6 +118,32 @@ def resolve(rva):
     return name, f, ln
 
 
+def resolve_with_size(rva):
+    """Like resolve(), plus the function's code size in bytes from the PDB."""
+    va = MOD_BASE + rva
+    disp = ctypes.c_ulonglong(0)
+    sym = SYMBOL_INFOW()
+    sym.SizeOfStruct = SYMBOL_INFO_SIZE
+    sym.MaxNameLen = NAME_CHARS
+    if not dbghelp.SymFromAddrW(H, va, ctypes.byref(disp), ctypes.byref(sym)):
+        return None, "", 0, 0
+    f, ln = _line_from_va(sym.Address)
+    return sym.Name, f, ln, int(sym.Size)
+
+
+def address_of(name):
+    """RVA of a symbol by name (used to identify instrumentation hooks)."""
+    fn = dbghelp.SymFromNameW
+    fn.argtypes = [wintypes.HANDLE, wintypes.LPCWSTR, ctypes.POINTER(SYMBOL_INFOW)]
+    fn.restype = wintypes.BOOL
+    sym = SYMBOL_INFOW()
+    sym.SizeOfStruct = SYMBOL_INFO_SIZE
+    sym.MaxNameLen = NAME_CHARS
+    if not fn(H, name, ctypes.byref(sym)):
+        return None
+    return int(sym.Address) - int(MOD_BASE)
+
+
 def norm_path(f):
     if not f:
         return ""

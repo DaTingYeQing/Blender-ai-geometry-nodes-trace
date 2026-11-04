@@ -20,8 +20,10 @@ class CallsGate(Gate):
         "covtrace_calls_dump",
         "covtrace_calls_dump_edges",
         "covtrace_calls_dump_returns",
+        "covtrace_calls_dump_timings",
         "covtrace_calls_edge_count",
         "covtrace_calls_return_count",
+        "covtrace_calls_timing_count",
     )
 
     def arm(self, ctx):
@@ -37,13 +39,16 @@ class CallsGate(Gate):
         dump = _fn("covtrace_calls_dump", None, (ctypes.c_char_p,))
         dump_edges = _fn("covtrace_calls_dump_edges", None, (ctypes.c_char_p,))
         dump_returns = _fn("covtrace_calls_dump_returns", None, (ctypes.c_char_p,))
+        dump_timings = _fn("covtrace_calls_dump_timings", None, (ctypes.c_char_p,))
         edge_count = _fn("covtrace_calls_edge_count", ctypes.c_uint32)
         return_count = _fn("covtrace_calls_return_count", ctypes.c_uint32)
+        timing_count = _fn("covtrace_calls_timing_count", ctypes.c_uint32)
 
         outputs = {
             "functions": ("functions.bin", dump),
             "edges": ("edges.bin", dump_edges),
             "returns": ("returns.bin", dump_returns),
+            "timings": ("timings.bin", dump_timings),
         }
         raw = {}
         for key, (filename, write) in outputs.items():
@@ -55,6 +60,7 @@ class CallsGate(Gate):
             "name": self.name,
             "edge_count": int(edge_count()),
             "return_count": int(return_count()),
+            "timing_count": int(timing_count()),
             "raw": raw,
         }
         with open(ctx.path("calls.json"), "w", encoding="utf-8") as fh:

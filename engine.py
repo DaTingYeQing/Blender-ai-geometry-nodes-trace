@@ -16,8 +16,11 @@ import time
 from cards.base import CardContext
 from cards.between import BetweenCard
 from cards.coverage import CoverageCard
+from cards.disasm import DisasmCard
 from cards.edge import EdgeCard
+from cards.only_call import OnlyCallCard
 from cards.returns import ReturnsCard
+from cards.timing import TimingCard
 from gates.calls import CallsGate
 from gates.coverage import CoverageGate
 from infra import blender as blender_lib
@@ -25,7 +28,8 @@ from infra import manifest, paths, runkey, target as targetfile
 
 # Registration lives here. Add a module by importing it and appending one entry.
 GATES = [CoverageGate(), CallsGate()]
-CARDS = [EdgeCard(), ReturnsCard(), BetweenCard(), CoverageCard()]
+CARDS = [EdgeCard(), OnlyCallCard(), DisasmCard(), ReturnsCard(), BetweenCard(),
+         CoverageCard(), TimingCard()]
 
 DEFAULT_KEEP_CACHE = 5
 
@@ -189,7 +193,8 @@ def run(a):
         return fail("找不到插桩 blender: %s" % blender)
 
     pdb = paths.pdb_for(blender)
-    key = runkey.run_key(eval_path, a.node, blender, pdb, target)
+    options = {"coverage_keep_all": True} if a.keep_all else {}
+    key = runkey.run_key(eval_path, a.node, blender, pdb, target, options)
     hash8 = runkey.short(key)
     out_root = paths.norm(a.out or paths.DEFAULT_OUT)
     run_dir = os.path.join(out_root, paths.safe_name(a.node), hash8)
@@ -215,6 +220,7 @@ def run(a):
     print("pdb       :", pdb if os.path.isfile(pdb) else "(缺失)")
     print("run key   :", key)
     print("hash8     :", hash8)
+    print("options   :", json.dumps(options, ensure_ascii=False))
     print("run dir   :", run_dir)
     print("cache dir :", cache_dir)
     print("gates     :", [g.name for g in GATES] or "(未注册)")
@@ -231,7 +237,7 @@ def run(a):
     shutil.rmtree(work_dir, ignore_errors=True)
     os.makedirs(work_dir)
     manifest.write(work_dir, manifest.base(
-        key, hash8, a.node, eval_path, target["blend"], blender, pdb))
+        key, hash8, a.node, eval_path, target["blend"], blender, pdb, options))
 
     gate_specs = ",".join(
         "%s:%s" % (type(g).__module__, type(g).__qualname__) for g in GATES)
@@ -277,7 +283,8 @@ def run(a):
     os.makedirs(staging_dir)
 
     ctx = CardContext(
-        work_dir, staging_dir, target, a.node, data, blender, pdb, data["raw"])
+        work_dir, staging_dir, target, a.node, data, blender, pdb, data["raw"],
+        options=options)
     try:
         _run_cards(ctx, data)
 
@@ -340,6 +347,11 @@ def translate(a):
     if not node or not hash8 or not blender:
         return fail("cache manifest 缺少 node/hash8/blender: %s" % cache_dir)
 
+    options = dict(data.get("options") or {})
+    if a.keep_all is not None:
+        options["coverage_keep_all"] = a.keep_all
+    data["options"] = options
+
     out_root = paths.norm(a.out or paths.DEFAULT_OUT)
     run_dir = os.path.join(out_root, paths.safe_name(node), hash8)
     os.makedirs(os.path.dirname(run_dir), exist_ok=True)
@@ -350,7 +362,7 @@ def translate(a):
 
     ctx = CardContext(
         cache_dir, staging_dir, status.get("target", {}), node, data,
-        blender, pdb, raw)
+        blender, pdb, raw, options=options)
     try:
         _run_cards(ctx, data)
         _finalize_out(run_dir, staging_dir, data, force=True)
@@ -383,10 +395,14 @@ def main():
                    help="每个节点保留最近 N 个 cache（0=不清理）")
     p.add_argument("--no-raw", action="store_true",
                    help="所有卡片成功后删除 raw cache")
+    p.add_argument("--keep-all", action="store_true",
+                   help="coverage.json 不过滤路径（默认只留 source/ + intern/）")
 
     t = sub.add_parser("translate", help="用 cache 里的 raw 重跑翻译卡片")
     t.add_argument("cache_dir", help="cache/<node>/<hash8> 目录")
     t.add_argument("--out", default="", help="输出根目录，默认 CovTrace/out")
+    t.add_argument("--keep-all", action="store_true", default=None,
+                   help="覆盖 cache 里的 coverage_keep_all 设置")
 
     a = ap.parse_args()
     if a.cmd == "run":

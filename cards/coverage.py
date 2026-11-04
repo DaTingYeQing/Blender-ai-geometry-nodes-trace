@@ -207,7 +207,9 @@ class CoverageCard(TranslationCard):
             export_lcov(exe, profdata, lcov)
             counts = parse_lcov_counts(lcov)
 
-            result = build_result(per_file, scanned, total, counts, eval_only=True)
+            keep_all = bool(ctx.options.get("coverage_keep_all"))
+            result = build_result(per_file, scanned, total, counts,
+                                  eval_only=not keep_all)
             path = ctx.out("coverage.json")
             with open(path, "w", encoding="utf-8") as fh:
                 fh.write(dumps(result))

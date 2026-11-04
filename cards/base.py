@@ -5,7 +5,8 @@ import os
 
 
 class CardContext:
-    def __init__(self, work_dir, out_dir, target, node, manifest, blender, pdb, raw):
+    def __init__(self, work_dir, out_dir, target, node, manifest, blender, pdb, raw,
+                 options=None):
         self.work_dir = work_dir
         self.out_dir = out_dir
         self.target = target
@@ -14,6 +15,7 @@ class CardContext:
         self.blender = blender
         self.pdb = pdb
         self.raw_paths = raw
+        self.options = options or {}
 
     def raw(self, key):
         path = self.raw_paths.get(key)
