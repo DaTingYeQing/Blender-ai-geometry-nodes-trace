@@ -372,7 +372,8 @@ class DisasmCard(TranslationCard):
             branchless = conditional_jumps == 0
             forwarder_candidate = (
                 tiny and branchless and real_calls == 1 and rets >= 1)
-            tail_thunk = first == "jmp" or (last == "jmp" and real_calls == 0)
+            # A local jmp is a loop/merge edge, not a tail call.
+            tail_thunk = tail_target_kind == "direct_external"
 
             functions.append({
                 "name": name,
@@ -434,6 +435,9 @@ class DisasmCard(TranslationCard):
                 "thunks": sum(
                     1 for f in functions if f["disasm"]["tail_thunk"]),
                 "symbol_kinds": kind_counts,
+                "symbol_kinds_note": (
+                    "5.1 name rules are toolchain-specific; normal means no "
+                    "pattern matched, not that the function is business logic"),
                 "max_func_bytes": MAX_FUNC_BYTES,
                 "note": ("size/instructions include instrumentation and coverage; "
                          "real_calls excludes __cyg_profile_func_* calls; "
