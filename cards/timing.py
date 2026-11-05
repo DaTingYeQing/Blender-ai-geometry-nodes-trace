@@ -66,6 +66,7 @@ class TimingCard(TranslationCard):
             total_self = _ns(self_ticks, freq)
             total_inclusive = _ns(inclusive_ticks, freq)
             functions.append({
+                "rva": rva,
                 "name": name,
                 "file": symbols.norm_path(path),
                 "line": line,

@@ -316,6 +316,7 @@ class DisasmCard(TranslationCard):
             tail_thunk = tail_target_kind == "direct_external"
 
             functions.append({
+                "rva": rva,
                 "name": name,
                 "file": symbols.norm_path(path),
                 "line": line,
