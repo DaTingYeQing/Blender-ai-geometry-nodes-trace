@@ -131,6 +131,15 @@ def resolve_with_size(rva):
     return sym.Name, f, ln, int(sym.Size)
 
 
+def name_of(rva):
+    """Exact symbol name at rva, without the line lookup."""
+    va = MOD_BASE + rva
+    name, fn_va = _sym_from_va(va)
+    if not name or fn_va != va:
+        return ""
+    return name
+
+
 def address_of(name):
     """RVA of a symbol by name (used to identify instrumentation hooks)."""
     fn = dbghelp.SymFromNameW
