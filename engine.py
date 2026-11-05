@@ -19,7 +19,6 @@ from cards.coverage import CoverageCard
 from cards.disasm import DisasmCard
 from cards.edge import EdgeCard
 from cards.metrics import MetricsCard
-from cards.only_call import OnlyCallCard
 from cards.returns import ReturnsCard
 from cards.timing import TimingCard
 from gates.calls import CallsGate
@@ -29,7 +28,7 @@ from infra import manifest, paths, runkey, target as targetfile
 
 # Registration lives here. Add a module by importing it and appending one entry.
 GATES = [CoverageGate(), CallsGate()]
-CARDS = [EdgeCard(), OnlyCallCard(), DisasmCard(), ReturnsCard(), BetweenCard(),
+CARDS = [EdgeCard(), DisasmCard(), ReturnsCard(), BetweenCard(),
          CoverageCard(), TimingCard(), MetricsCard()]
 
 DEFAULT_KEEP_CACHE = 5
