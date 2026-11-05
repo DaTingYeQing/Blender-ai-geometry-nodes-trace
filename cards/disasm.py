@@ -20,6 +20,66 @@ from .base import TranslationCard
 
 MAX_FUNC_BYTES = 256 * 1024
 
+SYMBOL_KINDS = ("hook", "global_init", "thunk", "deleting_destructor", "normal")
+
+
+def _classify_symbol(name):
+    """Apply the high-confidence rules from docs/筛选.md 5.1."""
+    lower = name.lower()
+    tags = []
+    kind = "normal"
+
+    if "__cyg_profile_func_enter" in lower or "__cyg_profile_func_exit" in lower:
+        tags.append("hook")
+        kind = "hook"
+
+    if "dynamic initializer" in lower:
+        tags.append("dynamic_initializer")
+        if kind == "normal":
+            kind = "global_init"
+    if "dynamic atexit destructor" in lower:
+        tags.append("dynamic_atexit_destructor")
+        if kind == "normal":
+            kind = "global_init"
+    if "_global__sub_i" in lower:
+        tags.append("global_sub_i")
+        if kind == "normal":
+            kind = "global_init"
+    if "__cxx_global_var_init" in lower:
+        tags.append("cxx_global_var_init")
+        if kind == "normal":
+            kind = "global_init"
+
+    if "[thunk]:" in lower:
+        tags.append("thunk")
+    if "vcall" in lower:
+        tags.append("vcall")
+    if "adjustor" in lower:
+        tags.append("adjustor")
+    if "non-virtual thunk to" in lower:
+        tags.append("non_virtual_thunk")
+    elif "virtual thunk to" in lower:
+        tags.append("virtual_thunk")
+    if any(t in tags for t in ("thunk", "vcall", "adjustor",
+                               "non_virtual_thunk", "virtual_thunk")):
+        if kind == "normal":
+            kind = "thunk"
+
+    if "vector deleting destructor" in lower:
+        tags.append("vector_deleting_destructor")
+        tags.append("deleting_destructor")
+        if kind == "normal":
+            kind = "deleting_destructor"
+    elif "deleting destructor" in lower:
+        tags.append("deleting_destructor")
+        if kind == "normal":
+            kind = "deleting_destructor"
+
+    return {
+        "kind": kind,
+        "tags": tags,
+    }
+
 
 def _pe_sections(data):
     if data[:2] != b"MZ":
@@ -120,30 +180,40 @@ class DisasmCard(TranslationCard):
                 "file": symbols.norm_path(path),
                 "line": line,
                 "module": symbols.module_of(path),
-                "size": size,
-                "instructions": instructions,
-                "calls": calls,
-                "hook_calls": hook_calls,
-                "real_calls": real_calls,
-                "jumps": jumps,
-                "conditional_jumps": conditional_jumps,
-                "rets": rets,
-                "first": first,
-                "last": last,
-                "tiny": tiny,
-                "branchless": branchless,
-                "forwarder_candidate": forwarder_candidate,
-                "tail_thunk": tail_thunk,
+                "disasm": {
+                    "size": size,
+                    "instructions": instructions,
+                    "calls": calls,
+                    "hook_calls": hook_calls,
+                    "real_calls": real_calls,
+                    "jumps": jumps,
+                    "conditional_jumps": conditional_jumps,
+                    "rets": rets,
+                    "first": first,
+                    "last": last,
+                    "tiny": tiny,
+                    "branchless": branchless,
+                    "forwarder_candidate": forwarder_candidate,
+                    "tail_thunk": tail_thunk,
+                },
+                "symbol": _classify_symbol(name),
             })
 
-        functions.sort(key=lambda item: (item["size"], item["name"]))
+        functions.sort(key=lambda item: (item["disasm"]["size"], item["name"]))
+        kind_counts = {kind: 0 for kind in SYMBOL_KINDS}
+        for item in functions:
+            kind_counts[item["symbol"]["kind"]] += 1
         report = {
             "meta": {
                 "blender": ctx.blender.replace("\\", "/"),
                 "image_base": image_base,
                 "functions": len(functions),
-                "candidates": sum(1 for f in functions if f["forwarder_candidate"]),
-                "thunks": sum(1 for f in functions if f["tail_thunk"]),
+                "candidates": sum(
+                    1 for f in functions
+                    if f["disasm"]["forwarder_candidate"]),
+                "thunks": sum(
+                    1 for f in functions if f["disasm"]["tail_thunk"]),
+                "symbol_kinds": kind_counts,
                 "max_func_bytes": MAX_FUNC_BYTES,
                 "note": ("size/instructions include instrumentation and coverage; "
                          "real_calls excludes __cyg_profile_func_* calls"),
