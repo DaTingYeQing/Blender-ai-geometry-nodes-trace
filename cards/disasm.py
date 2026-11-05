@@ -20,8 +20,6 @@ from .base import TranslationCard
 
 MAX_FUNC_BYTES = 256 * 1024
 
-SYMBOL_KINDS = ("hook", "global_init", "thunk", "deleting_destructor", "normal")
-
 FP_SIMD_GROUPS = frozenset((
     x86.X86_GRP_FPU, x86.X86_GRP_MMX,
     x86.X86_GRP_SSE1, x86.X86_GRP_SSE2, x86.X86_GRP_SSE3,
@@ -82,64 +80,6 @@ def _count_switch_tables(decoded):
         if guarded:
             count += 1
     return count
-
-
-def _classify_symbol(name):
-    """Apply the high-confidence rules from docs/筛选.md 5.1."""
-    lower = name.lower()
-    tags = []
-    kind = "normal"
-
-    if "__cyg_profile_func_enter" in lower or "__cyg_profile_func_exit" in lower:
-        tags.append("hook")
-        kind = "hook"
-
-    if "dynamic initializer" in lower:
-        tags.append("dynamic_initializer")
-        if kind == "normal":
-            kind = "global_init"
-    if "dynamic atexit destructor" in lower:
-        tags.append("dynamic_atexit_destructor")
-        if kind == "normal":
-            kind = "global_init"
-    if "_global__sub_i" in lower:
-        tags.append("global_sub_i")
-        if kind == "normal":
-            kind = "global_init"
-    if "__cxx_global_var_init" in lower:
-        tags.append("cxx_global_var_init")
-        if kind == "normal":
-            kind = "global_init"
-
-    if "[thunk]:" in lower:
-        tags.append("thunk")
-    if "vcall" in lower:
-        tags.append("vcall")
-    if "adjustor" in lower:
-        tags.append("adjustor")
-    if "non-virtual thunk to" in lower:
-        tags.append("non_virtual_thunk")
-    elif "virtual thunk to" in lower:
-        tags.append("virtual_thunk")
-    if any(t in tags for t in ("thunk", "vcall", "adjustor",
-                               "non_virtual_thunk", "virtual_thunk")):
-        if kind == "normal":
-            kind = "thunk"
-
-    if "vector deleting destructor" in lower:
-        tags.append("vector_deleting_destructor")
-        tags.append("deleting_destructor")
-        if kind == "normal":
-            kind = "deleting_destructor"
-    elif "deleting destructor" in lower:
-        tags.append("deleting_destructor")
-        if kind == "normal":
-            kind = "deleting_destructor"
-
-    return {
-        "kind": kind,
-        "tags": tags,
-    }
 
 
 def _pe_sections(data):
@@ -417,13 +357,9 @@ class DisasmCard(TranslationCard):
                     "forwarder_candidate": forwarder_candidate,
                     "tail_thunk": tail_thunk,
                 },
-                "symbol": _classify_symbol(name),
             })
 
         functions.sort(key=lambda item: (item["disasm"]["size"], item["name"]))
-        kind_counts = {kind: 0 for kind in SYMBOL_KINDS}
-        for item in functions:
-            kind_counts[item["symbol"]["kind"]] += 1
         report = {
             "meta": {
                 "blender": ctx.blender.replace("\\", "/"),
@@ -434,10 +370,6 @@ class DisasmCard(TranslationCard):
                     if f["disasm"]["forwarder_candidate"]),
                 "thunks": sum(
                     1 for f in functions if f["disasm"]["tail_thunk"]),
-                "symbol_kinds": kind_counts,
-                "symbol_kinds_note": (
-                    "5.1 name rules are toolchain-specific; normal means no "
-                    "pattern matched, not that the function is business logic"),
                 "max_func_bytes": MAX_FUNC_BYTES,
                 "note": ("size/instructions include instrumentation and coverage; "
                          "real_calls excludes __cyg_profile_func_* calls; "
