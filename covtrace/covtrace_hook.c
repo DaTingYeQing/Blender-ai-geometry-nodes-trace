@@ -20,10 +20,8 @@ extern int bltrace_arm(void);
 extern void bltrace_reset(void);
 extern void bltrace_dump(const char *path);
 extern void bltrace_dump_edges(const char *path);
-extern void bltrace_dump_returns(const char *path);
 extern void bltrace_dump_timings(const char *path);
 extern uint32_t bltrace_edge_count(void);
-extern uint32_t bltrace_return_count(void);
 extern uint32_t bltrace_timing_count(void);
 extern int bltrace_disarm(void);
 
@@ -49,11 +47,6 @@ __declspec(dllexport) void covtrace_calls_dump_edges(const char *path)
   bltrace_dump_edges(path);
 }
 
-__declspec(dllexport) void covtrace_calls_dump_returns(const char *path)
-{
-  bltrace_dump_returns(path);
-}
-
 __declspec(dllexport) void covtrace_calls_dump_timings(const char *path)
 {
   bltrace_dump_timings(path);
@@ -62,11 +55,6 @@ __declspec(dllexport) void covtrace_calls_dump_timings(const char *path)
 __declspec(dllexport) uint32_t covtrace_calls_edge_count(void)
 {
   return bltrace_edge_count();
-}
-
-__declspec(dllexport) uint32_t covtrace_calls_return_count(void)
-{
-  return bltrace_return_count();
 }
 
 __declspec(dllexport) uint32_t covtrace_calls_timing_count(void)

@@ -8,9 +8,11 @@
  * 64-bit values:
  *   function table: rva + 1
  *   edge table:     (caller_rva << 32) | callee_rva
- *   return table:   (callee_rva << 32) | caller_rva
  * where rva is the address returned by the /Gh entry call minus the module
  * base, i.e. entry + 5 for the usual five-byte call _penter.
+ *
+ * The exit hook only maintains the TLS stack and timing data. It does not
+ * record return edges.
  */
 
 #include <windows.h>
@@ -63,11 +65,9 @@ typedef struct TimingHeader {
 static volatile LONG g_armed = 0;
 static volatile LONG g_count = 0;
 static volatile LONG g_ecount = 0;
-static volatile LONG g_rcount = 0;
 static uint64_t g_base = 0;
 static uint64_t *g_slots = NULL;
 static uint64_t *g_eslots = NULL;
-static uint64_t *g_rslots = NULL;
 static TimingSlot *g_tslots = NULL;
 static volatile LONG g_tcount = 0;
 static uint64_t g_qpc_freq = 0;
@@ -149,10 +149,6 @@ __declspec(dllexport) int bltrace_arm(void)
   }
   if (g_eslots == NULL) {
     g_eslots = (uint64_t *)VirtualAlloc(
-        NULL, TABLE_BYTES, MEM_COMMIT | MEM_RESERVE, PAGE_READWRITE);
-  }
-  if (g_rslots == NULL) {
-    g_rslots = (uint64_t *)VirtualAlloc(
         NULL, TABLE_BYTES, MEM_COMMIT | MEM_RESERVE, PAGE_READWRITE);
   }
   if (g_tslots == NULL) {
@@ -265,14 +261,6 @@ __declspec(dllexport) void bltrace_exit(void *retaddr)
 
   if (top > 0) {
     state->stack[top - 1].child += inclusive;
-    if (g_rslots != NULL) {
-      uint64_t callee = frame.rva;
-      uint64_t caller = state->stack[top - 1].rva;
-      uint64_t edge = (callee << 32) | (uint32_t)caller;
-      if (edge != 0 && claim(g_rslots, SLOT_MASK, edge)) {
-        _InterlockedIncrement(&g_rcount);
-      }
-    }
   }
 }
 
@@ -283,9 +271,6 @@ __declspec(dllexport) void bltrace_reset(void)
   }
   if (g_eslots != NULL) {
     __stosq((unsigned __int64 *)g_eslots, 0, SLOT_COUNT);
-  }
-  if (g_rslots != NULL) {
-    __stosq((unsigned __int64 *)g_rslots, 0, SLOT_COUNT);
   }
   if (g_tslots != NULL) {
     __stosq((unsigned __int64 *)g_tslots, 0,
@@ -300,7 +285,6 @@ __declspec(dllexport) void bltrace_reset(void)
   }
   _InterlockedExchange(&g_count, 0);
   _InterlockedExchange(&g_ecount, 0);
-  _InterlockedExchange(&g_rcount, 0);
 }
 
 __declspec(dllexport) void bltrace_dump(const char *path)
@@ -327,27 +311,6 @@ __declspec(dllexport) void bltrace_dump(const char *path)
 __declspec(dllexport) void bltrace_dump_edges(const char *path)
 {
   uint64_t *table = g_eslots;
-  if (table == NULL) {
-    return;
-  }
-  HANDLE file = CreateFileA(path, GENERIC_WRITE, FILE_SHARE_READ, NULL,
-                            CREATE_ALWAYS, FILE_ATTRIBUTE_NORMAL, NULL);
-  if (file == INVALID_HANDLE_VALUE) {
-    return;
-  }
-  DWORD written = 0;
-  for (uint32_t i = 0; i < SLOT_COUNT; i++) {
-    uint64_t value = table[i];
-    if (value != 0) {
-      WriteFile(file, &value, sizeof(value), &written, NULL);
-    }
-  }
-  CloseHandle(file);
-}
-
-__declspec(dllexport) void bltrace_dump_returns(const char *path)
-{
-  uint64_t *table = g_rslots;
   if (table == NULL) {
     return;
   }
@@ -410,9 +373,4 @@ __declspec(dllexport) void bltrace_dump_timings(const char *path)
 __declspec(dllexport) uint32_t bltrace_edge_count(void)
 {
   return (uint32_t)g_ecount;
-}
-
-__declspec(dllexport) uint32_t bltrace_return_count(void)
-{
-  return (uint32_t)g_rcount;
 }
