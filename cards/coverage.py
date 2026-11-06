@@ -12,6 +12,7 @@ import subprocess
 import tempfile
 import time
 from collections import Counter
+from concurrent.futures import ThreadPoolExecutor
 
 from infra import paths
 
@@ -193,18 +194,24 @@ class CoverageCard(TranslationCard):
                 check=True)
 
             show = os.path.join(temp_dir, "cov_show.txt")
-            with open(show, "w", encoding="utf-8", errors="replace") as fh:
-                subprocess.run(
-                    [LLVM_COV, "show", exe, "-instr-profile=" + profdata,
-                     "-show-line-counts-or-regions",
-                     "-show-instantiations=false",
-                     "-show-expansions=false"],
-                    stdout=fh, check=True)
+            lcov = os.path.join(temp_dir, "coverage.lcov")
+
+            def run_show():
+                with open(show, "w", encoding="utf-8", errors="replace") as fh:
+                    subprocess.run(
+                        [LLVM_COV, "show", exe, "-instr-profile=" + profdata,
+                         "-show-line-counts-or-regions",
+                         "-show-instantiations=false",
+                         "-show-expansions=false"],
+                        stdout=fh, check=True)
+
+            with ThreadPoolExecutor(max_workers=2) as pool:
+                show_future = pool.submit(run_show)
+                export_future = pool.submit(export_lcov, exe, profdata, lcov)
+                show_future.result()
+                export_future.result()
 
             per_file, scanned, total = parse_show(show)
-
-            lcov = os.path.join(temp_dir, "coverage.lcov")
-            export_lcov(exe, profdata, lcov)
             counts = parse_lcov_counts(lcov)
 
             keep_all = bool(ctx.options.get("coverage_keep_all"))

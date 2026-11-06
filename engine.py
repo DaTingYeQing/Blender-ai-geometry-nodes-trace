@@ -12,6 +12,7 @@ import os
 import shutil
 import sys
 import time
+from concurrent.futures import ThreadPoolExecutor
 
 from cards.base import CardContext
 from cards.between import BetweenCard
@@ -130,30 +131,58 @@ def _capture_problem(status):
     return ""
 
 
+def _missing_needs(card, available_raw, products):
+    missing = []
+    for need in card.needs:
+        if need.startswith("raw:"):
+            if need[4:] not in available_raw:
+                missing.append(need)
+        elif need not in products:
+            missing.append(need)
+    return missing
+
+
 def _run_cards(ctx, data):
     available_raw = set(ctx.raw_paths)
     products = set()
-    summaries = []
-    for card in CARDS:
-        missing = []
-        for need in card.needs:
-            if need.startswith("raw:"):
-                if need[4:] not in available_raw:
-                    missing.append(need)
-            elif need not in products:
-                missing.append(need)
-        if missing:
-            raise RuntimeError("card %s missing inputs: %s" % (card.name, missing))
+    summaries = {}
+    coverage = next((card for card in CARDS if card.name == "coverage"), None)
 
-        summary = card.build(ctx)
-        if summary.get("output"):
-            products.add(summary["output"])
-        products.update(summary.get("extra_outputs") or ())
-        summaries.append(summary)
+    with ThreadPoolExecutor(max_workers=1) as pool:
+        coverage_future = None
+        if coverage is not None:
+            missing = _missing_needs(coverage, available_raw, products)
+            if missing:
+                raise RuntimeError(
+                    "card %s missing inputs: %s" % (coverage.name, missing))
+            coverage_future = pool.submit(coverage.build, ctx)
 
-    data["cards"] = summaries
+        for card in CARDS:
+            if card is coverage:
+                continue
+            missing = _missing_needs(card, available_raw, products)
+            if missing:
+                raise RuntimeError(
+                    "card %s missing inputs: %s" % (card.name, missing))
+
+            summary = card.build(ctx)
+            if summary.get("output"):
+                products.add(summary["output"])
+            products.update(summary.get("extra_outputs") or ())
+            summaries[card.name] = summary
+
+        if coverage_future is not None:
+            summary = coverage_future.result()
+            if summary.get("output"):
+                products.add(summary["output"])
+            products.update(summary.get("extra_outputs") or ())
+            summaries[coverage.name] = summary
+
+    ordered = [summaries[card.name] for card in CARDS
+               if card.name in summaries]
+    data["cards"] = ordered
     data["products"] = {}
-    for item in summaries:
+    for item in ordered:
         if not item.get("public", True):
             continue
         if item.get("output"):
