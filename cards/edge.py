@@ -12,7 +12,7 @@ class EdgeCard(TranslationCard):
     def build(self, ctx):
         obj = symbols.symbolize(
             ctx.raw("functions"), ctx.raw("edges"), ctx.blender,
-            with_addresses=False)
+            with_addresses=True)
         path = ctx.out("edge.json")
         with open(path, "w", encoding="utf-8") as fh:
             fh.write(symbols.dumps_export(obj))

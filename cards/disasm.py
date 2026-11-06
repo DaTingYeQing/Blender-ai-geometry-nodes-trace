@@ -380,7 +380,7 @@ class DisasmCard(TranslationCard):
             "functions": functions,
         }
 
-        path = ctx.out("disasm.json")
+        path = ctx.publish("disasm.json")
         with open(path, "w", encoding="utf-8") as fh:
             json.dump(report, fh, ensure_ascii=False, indent=1)
             fh.write("\n")
@@ -391,4 +391,5 @@ class DisasmCard(TranslationCard):
             "candidates": report["meta"]["candidates"],
             "thunks": report["meta"]["thunks"],
             "output": "disasm.json",
+            "public": ctx.test,
         }

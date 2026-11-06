@@ -147,14 +147,24 @@ def _run_cards(ctx, data):
         summary = card.build(ctx)
         if summary.get("output"):
             products.add(summary["output"])
+        products.update(summary.get("extra_outputs") or ())
         summaries.append(summary)
 
     data["cards"] = summaries
-    data["products"] = {
-        item.get("name", "?"): item.get("output")
-        for item in summaries if item.get("output")
-    }
+    data["products"] = {}
+    for item in summaries:
+        if not item.get("public", True):
+            continue
+        if item.get("output"):
+            data["products"][item.get("name", "?")] = item["output"]
+        for output in item.get("extra_outputs") or ():
+            data["products"][os.path.splitext(output)[0]] = output
     return data
+
+
+def _drop_internal(out_dir, test):
+    if not test:
+        shutil.rmtree(os.path.join(out_dir, "_internal"), ignore_errors=True)
 
 
 def _finalize_out(run_dir, staging_dir, data, force=False):
@@ -284,9 +294,10 @@ def run(a):
 
     ctx = CardContext(
         work_dir, staging_dir, target, a.node, data, blender, pdb, data["raw"],
-        options=options)
+        options=options, test=a.test)
     try:
         _run_cards(ctx, data)
+        _drop_internal(staging_dir, a.test)
 
         if a.no_raw:
             data["raw"] = {}
@@ -362,9 +373,10 @@ def translate(a):
 
     ctx = CardContext(
         cache_dir, staging_dir, status.get("target", {}), node, data,
-        blender, pdb, raw, options=options)
+        blender, pdb, raw, options=options, test=a.test)
     try:
         _run_cards(ctx, data)
+        _drop_internal(staging_dir, a.test)
         _finalize_out(run_dir, staging_dir, data, force=True)
     except Exception as exc:
         shutil.rmtree(staging_dir, ignore_errors=True)
@@ -397,12 +409,16 @@ def main():
                    help="所有卡片成功后删除 raw cache")
     p.add_argument("--keep-all", action="store_true",
                    help="coverage.json 不过滤路径（默认只留 source/ + intern/）")
+    p.add_argument("--test", action="store_true",
+                   help="保留 disasm/timing/return 中间 JSON 供检查")
 
     t = sub.add_parser("translate", help="用 cache 里的 raw 重跑翻译卡片")
     t.add_argument("cache_dir", help="cache/<node>/<hash8> 目录")
     t.add_argument("--out", default="", help="输出根目录，默认 CovTrace/out")
     t.add_argument("--keep-all", action="store_true", default=None,
                    help="覆盖 cache 里的 coverage_keep_all 设置")
+    t.add_argument("--test", action="store_true",
+                   help="保留 disasm/timing/return 中间 JSON 供检查")
 
     a = ap.parse_args()
     if a.cmd == "run":

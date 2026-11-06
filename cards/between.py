@@ -1,5 +1,9 @@
 # -*- coding: utf-8 -*-
-"""between card: edge.json + return.json + node -> between.json."""
+"""between card: edge.json + return.json + node -> between.json.
+
+Graph traversal is keyed by RVA. Names are kept for display only, because
+distinct functions can share the same name/file/line.
+"""
 
 import json
 import os
@@ -29,9 +33,10 @@ def _resolve_node(names, node):
 
 def _direct_returners(functions, targets):
     return {
-        f.get("name", "")
+        f.get("rva")
         for f in functions
-        if any(ref.get("name") in targets for ref in f.get("returns_to", []))
+        if f.get("rva") is not None
+        and any(ref.get("rva") in targets for ref in f.get("returns_to", []))
     }
 
 
@@ -53,7 +58,7 @@ class BetweenCard(TranslationCard):
 
     def build(self, ctx):
         edge_path = ctx.out("edge.json")
-        return_path = ctx.out("return.json")
+        return_path = ctx.input("return.json")
         with open(edge_path, encoding="utf-8") as fh:
             edge = json.load(fh)
         with open(return_path, encoding="utf-8") as fh:
@@ -62,6 +67,7 @@ class BetweenCard(TranslationCard):
         files = edge.get("files", [])
         funcs = edge.get("functions", [])
         names = [f.get("name", "") for f in funcs]
+        rvas = [f.get("rva") for f in funcs]
 
         def func_path(f):
             i = f.get("file")
@@ -69,25 +75,43 @@ class BetweenCard(TranslationCard):
                 return files[i]
             return ""
 
-        by_name = {}
+        by_rva = {}
         for f in funcs:
-            by_name.setdefault(f.get("name", ""), f)
+            rva = f.get("rva")
+            if rva is not None:
+                by_rva[rva] = f
+
+        def node_ref(rva):
+            f = by_rva[rva]
+            return {
+                "rva": rva,
+                "name": f.get("name", ""),
+                "file": func_path(f),
+                "line": f.get("line"),
+            }
 
         resolved = _resolve_node(names, ctx.node)
-        start = _direct_returners(returns.get("functions", []), {resolved})
+        node_indices = [i for i, name in enumerate(names) if name == resolved]
+        if len(node_indices) != 1:
+            raise RuntimeError(
+                "node %r matches %d rva records" % (resolved, len(node_indices)))
+        node_rva = rvas[node_indices[0]]
+        if node_rva is None:
+            raise RuntimeError("node %r has no rva" % resolved)
+
+        start = _direct_returners(returns.get("functions", []), {node_rva})
         final = _direct_returners(returns.get("functions", []), start)
 
-        graph_names = set(names)
-        missing = sorted((start | final) - graph_names)
+        missing = sorted(rva for rva in (start | final) if rva not in by_rva)
         if missing:
-            raise RuntimeError("start/finally missing from edge.json: %s" % missing)
+            raise RuntimeError(
+                "start/finally missing from edge.json: %s" % missing)
 
         callees = defaultdict(set)
         callers = defaultdict(set)
-        for f in funcs:
-            name = f.get("name", "")
-            callees[name]
-            callers[name]
+        for rva in by_rva:
+            callees[rva]
+            callers[rva]
         for edge_row in edge.get("edges", []):
             caller_idx = edge_row.get("caller")
             callee_idx = edge_row.get("callee")
@@ -95,36 +119,39 @@ class BetweenCard(TranslationCard):
                 continue
             if not (0 <= caller_idx < len(funcs) and 0 <= callee_idx < len(funcs)):
                 continue
-            caller = names[caller_idx]
-            callee = names[callee_idx]
-            callees[caller].add(callee)
-            callers[callee].add(caller)
+            caller_rva = rvas[caller_idx]
+            callee_rva = rvas[callee_idx]
+            if caller_rva is None or callee_rva is None:
+                continue
+            callees[caller_rva].add(callee_rva)
+            callers[callee_rva].add(caller_rva)
 
         down = _closure(start, callees)
         up = _closure(final, callers)
         keep = sorted(down & up)
 
-        between = [
-            {
-                "name": name,
-                "file": func_path(by_name[name]),
-                "line": by_name[name].get("line"),
-            }
-            for name in keep
-            if name in by_name
-        ]
+        between = [node_ref(rva) for rva in keep if rva in by_rva]
+        between.sort(key=lambda item: (item["name"], item["file"],
+                                       item["line"] or 0))
+
+        def sort_refs(rva_set):
+            return sorted(
+                (node_ref(rva) for rva in rva_set if rva in by_rva),
+                key=lambda item: (item["name"], item["file"],
+                                  item["line"] or 0))
 
         boundary = {
             "meta": {
                 "node": ctx.node,
                 "node_resolved": resolved,
+                "identity": "rva",
                 "start": len(start),
                 "finally": len(final),
                 "edge_json": "edge.json",
                 "return_json": "return.json",
             },
-            "start": sorted(start),
-            "finally": sorted(final),
+            "start": sort_refs(start),
+            "finally": sort_refs(final),
         }
         boundary_path = ctx.out("boundary.json")
         with open(boundary_path, "w", encoding="utf-8") as fh:
@@ -135,6 +162,7 @@ class BetweenCard(TranslationCard):
             "meta": {
                 "node": ctx.node,
                 "node_resolved": resolved,
+                "identity": "rva",
                 "start": len(start),
                 "finally": len(final),
                 "between": len(between),
@@ -162,4 +190,5 @@ class BetweenCard(TranslationCard):
             "between": len(between),
             "boundary": "boundary.json",
             "output": "between.json",
+            "extra_outputs": ["boundary.json"],
         }

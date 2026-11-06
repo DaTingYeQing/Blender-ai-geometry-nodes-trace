@@ -210,6 +210,8 @@ def _export_edge(an, af, al, cn, cf, cl, cr, ce, with_addresses):
     if with_addresses:
         row["caller_rva"] = cr
         row["callee_rva"] = ce
+        row["caller_va"] = MOD_BASE + cr
+        row["callee_va"] = MOD_BASE + ce
     return row
 
 
@@ -227,11 +229,17 @@ def build_export(funcs, edge_rows, meta, has_edges, with_addresses=False):
 
     symbols, sym_idx = [], {}
 
+    def sym_key(name, f, line, addr=None):
+        p = norm_path(f)
+        if with_addresses and addr and addr.get("rva") is not None:
+            return ("rva", int(addr["rva"]))
+        return ("sym", name, p, int(line or 0))
+
     def add_symbol(name, f, line, module, addr=None):
         p = norm_path(f)
         if not p:
             return None
-        key = (name, p, int(line or 0))
+        key = sym_key(name, p, line, addr)
         if key in sym_idx:
             return sym_idx[key]
         row = {"name": name, "file": add_file(p), "line": int(line or 0),
@@ -244,8 +252,11 @@ def build_export(funcs, edge_rows, meta, has_edges, with_addresses=False):
 
     dropped_funcs = 0
     for d in funcs:
+        addr = None
+        if with_addresses and "rva" in d:
+            addr = {"rva": d["rva"], "va": d["va"]}
         if add_symbol(d["name"], d["file"], d["line"], d["module"],
-                      {"rva": d["rva"], "va": d["va"]} if "rva" in d else None) is None:
+                      addr) is None:
             dropped_funcs += 1
     project_symbols = len(symbols)
 
@@ -255,10 +266,14 @@ def build_export(funcs, edge_rows, meta, has_edges, with_addresses=False):
         if not norm_path(e["caller_file"]) or not norm_path(e["callee_file"]):
             dropped_edges += 1
             continue
+        caller_addr = callee_addr = None
+        if with_addresses and "caller_rva" in e:
+            caller_addr = {"rva": e["caller_rva"], "va": e["caller_va"]}
+            callee_addr = {"rva": e["callee_rva"], "va": e["callee_va"]}
         add_symbol(e["caller"], e["caller_file"], e["caller_line"],
-                   module_of(e["caller_file"]))
+                   module_of(e["caller_file"]), caller_addr)
         add_symbol(e["callee"], e["callee_file"], e["callee_line"],
-                   module_of(e["callee_file"]))
+                   module_of(e["callee_file"]), callee_addr)
         valid_edges.append(e)
 
     out = {
@@ -278,8 +293,14 @@ def build_export(funcs, edge_rows, meta, has_edges, with_addresses=False):
     if has_edges:
         edges = []
         for e in valid_edges:
-            ck = (e["caller"], norm_path(e["caller_file"]), int(e["caller_line"] or 0))
-            ek = (e["callee"], norm_path(e["callee_file"]), int(e["callee_line"] or 0))
+            caller_addr = callee_addr = None
+            if with_addresses and "caller_rva" in e:
+                caller_addr = {"rva": e["caller_rva"]}
+                callee_addr = {"rva": e["callee_rva"]}
+            ck = sym_key(e["caller"], e["caller_file"], e["caller_line"],
+                         caller_addr)
+            ek = sym_key(e["callee"], e["callee_file"], e["callee_line"],
+                         callee_addr)
             row = {"caller": sym_idx[ck], "callee": sym_idx[ek]}
             if with_addresses:
                 if "caller_rva" in e:
@@ -320,7 +341,8 @@ def symbolize(functions_bin, edges_bin, exe, with_addresses=False):
     rvas = read_u64s(functions_bin)
 
     funcs = []
-    for rva in rvas:
+    for value in rvas:
+        rva = value - 1
         name, f, ln = resolve(rva)
         if not name:
             continue

@@ -95,7 +95,7 @@ class TimingCard(TranslationCard):
             "functions": functions,
         }
 
-        path = ctx.out("timing.json")
+        path = ctx.publish("timing.json")
         with open(path, "w", encoding="utf-8") as fh:
             json.dump(report, fh, ensure_ascii=False, indent=1)
             fh.write("\n")
@@ -106,4 +106,5 @@ class TimingCard(TranslationCard):
             "functions": len(functions),
             "total_calls": report["meta"]["total_calls"],
             "output": "timing.json",
+            "public": ctx.test,
         }

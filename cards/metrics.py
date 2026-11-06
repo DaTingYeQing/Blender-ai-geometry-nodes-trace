@@ -49,10 +49,10 @@ class MetricsCard(TranslationCard):
     needs = ("disasm.json", "raw:edges")
 
     def build(self, ctx):
-        with open(ctx.out("disasm.json"), encoding="utf-8") as fh:
+        with open(ctx.input("disasm.json"), encoding="utf-8") as fh:
             disasm = json.load(fh)
 
-        timing_path = ctx.out("timing.json")
+        timing_path = ctx.input("timing.json")
         timing = {}
         if os.path.isfile(timing_path):
             with open(timing_path, encoding="utf-8") as fh:
