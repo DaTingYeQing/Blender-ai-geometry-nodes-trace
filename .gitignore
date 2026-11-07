@@ -1,5 +1,6 @@
 __pycache__/
 *.pyc
+eval/_auto/
 out/
 cache/
 .test-out/
