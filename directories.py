@@ -8,7 +8,7 @@ ROOT = os.path.dirname(os.path.abspath(__file__))
 BLENDER_BIN_DIR = r"D:\blender-src\build_windows_x64_ClangCovTrace\bin"
 LLVM_BIN_DIR = r"D:\tools\llvm\bin"
 GRAPHVIZ_BIN_DIR = r"D:\qcachegrind074-x86"
-SOURCE_DIR = os.path.normpath(os.path.join(ROOT, os.pardir, "blender-4.5.0"))
+SOURCE_DIR = r"D:\blender-src\blender-4.5.0"
 
 OUT_DIR = os.path.join(ROOT, "out")
 CACHE_DIR = os.path.join(ROOT, "cache")
