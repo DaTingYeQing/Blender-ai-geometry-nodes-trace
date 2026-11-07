@@ -4,13 +4,20 @@
 Search matches only the node label that is visible in the graph (plain
 case-insensitive substring). Drag to pan, wheel to zoom.
 
-  python tools/svg_viewer.py --svg out/graphs/full.svg
+Usage:
+  python tools/svg_viewer.py 7343650d            # -> <run>/full.html or newest .svg
+  python tools/svg_viewer.py 7343650d --name full
+  python tools/svg_viewer.py --svg out/diff/full.svg
 """
 
 import argparse
+import glob
 import os
 import re
 import sys
+
+ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+OUT = os.path.join(ROOT, "out")
 
 HTML = r"""<!DOCTYPE html>
 <html lang="zh">
@@ -328,14 +335,61 @@ def build(svg_path, title):
     return HTML.replace("__SVG__", text).replace("__TITLE__", title)
 
 
+def find_svg(hash8):
+    exact = glob.glob(os.path.join(OUT, "*", hash8, "*.svg"))
+    if exact:
+        return sorted(exact)
+    return sorted(p for p in glob.glob(os.path.join(OUT, "*", "*", "*.svg"))
+                  if os.path.basename(os.path.dirname(p)).startswith(hash8))
+
+
 def main():
+    for stream in (sys.stdout, sys.stderr):
+        try:
+            stream.reconfigure(encoding="utf-8")
+        except Exception:
+            pass
+
     ap = argparse.ArgumentParser()
-    ap.add_argument("--svg", required=True)
-    ap.add_argument("--out", default="")
+    ap.add_argument("hash8", nargs="?", help="run hash, e.g. 7343650d")
+    ap.add_argument("--svg", default="", help="explicit .svg path")
+    ap.add_argument("--name", default="",
+                    help="svg basename when a run has several (e.g. full)")
+    ap.add_argument("--out", default="", help="output .html path")
     ap.add_argument("--title", default="")
     a = ap.parse_args()
 
-    svg_path = os.path.abspath(a.svg)
+    if a.svg:
+        svg_path = os.path.abspath(a.svg)
+    elif a.hash8:
+        matches = find_svg(a.hash8)
+        if not matches:
+            print("!! out/*/%s/*.svg 不存在；先运行 dot_graph.py %s -svg"
+                  % (a.hash8, a.hash8), file=sys.stderr)
+            return 2
+        names = {os.path.splitext(os.path.basename(p))[0]: p for p in matches}
+        if a.name:
+            if a.name not in names:
+                print("!! %s 下没有 %s.svg，可用: %s"
+                      % (a.hash8, a.name, ", ".join(sorted(names))), file=sys.stderr)
+                return 2
+            svg_path = names[a.name]
+        elif "full" in names:
+            svg_path = names["full"]
+        elif len(matches) == 1:
+            svg_path = matches[0]
+        else:
+            svg_path = max(matches, key=os.path.getmtime)
+            print(">> 多个 svg，使用最新的: %s" % svg_path)
+    else:
+        avail = sorted({os.path.basename(os.path.dirname(p))
+                        for p in glob.glob(os.path.join(OUT, "*", "*", "*.svg"))})
+        print("!! 需要指定哈希，例如: python tools/svg_viewer.py 7343650d",
+              file=sys.stderr)
+        if avail:
+            print("   可用: %s" % ", ".join(avail[-20:]), file=sys.stderr)
+        return 2
+
     if not os.path.isfile(svg_path):
         print("!! svg not found: %s" % svg_path, file=sys.stderr)
         return 2
@@ -343,6 +397,7 @@ def main():
     title = a.title or os.path.basename(svg_path)
     with open(out, "w", encoding="utf-8") as fh:
         fh.write(build(svg_path, title))
+    print(">> svg : %s" % svg_path)
     print(">> html: %s (%.1f MB)" % (out, os.path.getsize(out) / 1048576.0))
     return 0
 
