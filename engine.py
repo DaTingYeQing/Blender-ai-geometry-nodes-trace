@@ -7,7 +7,6 @@ rebuilds the final JSON products without launching Blender again.
 """
 
 import argparse
-import copy
 import json
 import os
 import shutil
@@ -215,7 +214,7 @@ def _load_status(work_dir):
 
 
 def run(a):
-    if a.phase or a.diff_against or a.dry_run:
+    if a.dry_run:
         return _run_once(a)
 
     eval_path = paths.norm(a.eval)
@@ -229,26 +228,21 @@ def run(a):
         return _run_once(a)
 
     print(">> auto diff:", measure_spec)
-    before = copy.copy(a)
-    before.phase = "before"
-    before.measure_node = measure_spec
-    before.no_raw = False
     before_result = {}
-    code = _run_once(before, before_result)
+    code = _run_once(a, before_result, phase="before", no_raw=False)
     if code:
         return code
 
-    after = copy.copy(a)
-    after.phase = "after"
-    after.measure_node = measure_spec
-    after.diff_against = before_result["cache_dir"]
-    code = _run_once(after)
+    code = _run_once(
+        a, phase="after", diff_against=before_result["cache_dir"])
     if not code and a.no_raw:
         shutil.rmtree(before_result["cache_dir"], ignore_errors=True)
     return code
 
 
-def _run_once(a, result=None):
+def _run_once(a, result=None, phase="", diff_against="", no_raw=None):
+    if no_raw is None:
+        no_raw = a.no_raw
     eval_path = paths.norm(a.eval)
     if not os.path.isfile(eval_path):
         return fail("找不到求值脚本: %s" % eval_path)
@@ -269,16 +263,14 @@ def _run_once(a, result=None):
 
     pdb = paths.pdb_for(blender)
     measure_spec = a.measure_node or targetfile.measure_node(eval_path)
-    if a.phase and not measure_spec:
-        return fail("--phase 需要 eval 里的 NODE 或 --measure-node")
 
     options = {"coverage_keep_all": True} if a.keep_all else {}
-    if a.phase:
-        options["phase"] = a.phase
+    if phase:
+        options["phase"] = phase
     if measure_spec:
         options["measure_node"] = measure_spec
-    if a.diff_against:
-        options["diff_against"] = os.path.abspath(a.diff_against)
+    if diff_against:
+        options["diff_against"] = os.path.abspath(diff_against)
 
     key = runkey.run_key(eval_path, a.node, blender, pdb, target, options)
     hash8 = runkey.short(key)
@@ -330,7 +322,7 @@ def _run_once(a, result=None):
     cmd = blender_lib.command(
         blender, eval_path, work_dir, a.node,
         blend=a.blend, obj=a.obj, mod=a.mod, param=a.param, gates=gate_specs,
-        phase=a.phase, measure_node=measure_spec)
+        phase=phase, measure_node=measure_spec)
     env = dict(os.environ)
     env.setdefault("LLVM_PROFILE_FILE", "NUL")
     blender_lib.run(cmd, env=env)
@@ -376,7 +368,7 @@ def _run_once(a, result=None):
         _run_cards(ctx, data)
         _drop_internal(staging_dir, a.test)
 
-        if a.no_raw:
+        if no_raw:
             data["raw"] = {}
             for gate in data.get("gates", []):
                 gate["raw"] = {}
@@ -392,7 +384,7 @@ def _run_once(a, result=None):
 
         _finalize_out(run_dir, staging_dir, data, force=a.force)
 
-        if a.no_raw:
+        if no_raw:
             shutil.rmtree(work_dir, ignore_errors=True)
         else:
             if os.path.isdir(cache_dir):
@@ -540,12 +532,8 @@ def main():
                    help="coverage.json 不过滤路径（默认只留 source/ + intern/）")
     p.add_argument("--test", action="store_true",
                    help="保留 disasm/timing 中间 JSON 供检查")
-    p.add_argument("--phase", choices=("", "before", "after"), default="",
-                   help="boundary 对比阶段：before/after")
     p.add_argument("--measure-node", default="",
                    help="要测量的节点（覆盖 eval 里的 NODE）")
-    p.add_argument("--diff-against", default="",
-                   help="before 运行的 cache/out 目录，DiffCard 最后相减")
 
     v = sub.add_parser("validate", help="只校验工程和节点，不跑求值")
     v.add_argument("--eval", required=True, help="求值脚本 .py")

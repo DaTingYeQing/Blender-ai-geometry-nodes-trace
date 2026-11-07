@@ -104,30 +104,16 @@ def main():
     node_name = args.node or ("bnd_" + paths.safe_name(
         measure.get("type") or spec))
 
-    # 2) before：组输出接目标的几何输入
-    before = _run_engine(
-        ["run", "--eval", eval_path, "--node", node_name,
-         "--phase", "before"] + measure_arg + common)
-    if before.returncode != 0:
-        return before.returncode
-    before_cache = _line(before.stdout, ">> cache")
-    if not before_cache:
-        print("!! 没找到 before cache 路径", file=sys.stderr)
-        return 1
-
-    # 3) after：组输出接目标的几何输出；DiffCard 最后和 before 相减
-    after = _run_engine(
-        ["run", "--eval", eval_path, "--node", node_name,
-         "--phase", "after", "--diff-against", before_cache] +
+    completed = _run_engine(
+        ["run", "--eval", eval_path, "--node", node_name] +
         measure_arg + common)
-    if after.returncode != 0:
-        return after.returncode
+    if completed.returncode != 0:
+        return completed.returncode
 
-    run_dir = _line(after.stdout, ">> run dir")
+    run_dir = _line(completed.stdout, ">> run dir")
     print()
     print(">> measure : %s (%s)" % (measure.get("node") or spec,
                                     measure.get("type") or "?"))
-    print(">> before  : %s" % before_cache)
     print(">> after   : %s" % (run_dir or "?"))
     if run_dir:
         print(">> diff    : %s" % os.path.join(

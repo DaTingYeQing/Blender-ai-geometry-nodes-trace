@@ -111,10 +111,10 @@ def main():
 
         from frag import targeting
 
-        targeting.validate_zones(mod.node_group)
         spec = args.measure_node or targetfile.measure_node(args.eval)
         measure = None
         if spec:
+            targeting.validate_zones(mod.node_group)
             measure = targeting.resolve(mod.node_group, spec)
         if args.phase:
             if measure is None:

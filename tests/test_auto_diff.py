@@ -13,8 +13,6 @@ def make_args(eval_path, **overrides):
     values = {
         "eval": eval_path,
         "measure_node": "",
-        "phase": "",
-        "diff_against": "",
         "dry_run": False,
         "no_raw": False,
     }
@@ -38,9 +36,9 @@ class AutoDiffTests(unittest.TestCase):
             eval_path = write_eval(root)
             before_cache = os.path.join(root, "before-cache")
 
-            def fake_run(a, result=None):
-                calls.append((a.phase, a.diff_against, a.measure_node))
-                if a.phase == "before":
+            def fake_run(a, result=None, phase="", diff_against="", no_raw=None):
+                calls.append((phase, diff_against))
+                if phase == "before":
                     result["cache_dir"] = before_cache
                 return 0
 
@@ -49,8 +47,8 @@ class AutoDiffTests(unittest.TestCase):
 
         self.assertEqual(code, 0)
         self.assertEqual(calls, [
-            ("before", "", "设置位置"),
-            ("after", before_cache, "设置位置"),
+            ("before", ""),
+            ("after", before_cache),
         ])
 
     def test_no_node_keeps_single_capture(self):
@@ -58,30 +56,30 @@ class AutoDiffTests(unittest.TestCase):
         with tempfile.TemporaryDirectory() as root:
             eval_path = write_eval(root, node=False)
 
-            def fake_run(a, result=None):
-                calls.append(a.phase)
+            def fake_run(a, result=None, phase="", diff_against="", no_raw=None):
+                calls.append((phase, diff_against))
                 return 0
 
             with patch.object(engine, "_run_once", fake_run):
                 code = engine.run(make_args(eval_path))
 
         self.assertEqual(code, 0)
-        self.assertEqual(calls, [""])
+        self.assertEqual(calls, [("", "")])
 
-    def test_explicit_phase_keeps_single_capture(self):
+    def test_dry_run_keeps_single_capture(self):
         calls = []
         with tempfile.TemporaryDirectory() as root:
             eval_path = write_eval(root)
 
-            def fake_run(a, result=None):
-                calls.append(a.phase)
+            def fake_run(a, result=None, phase="", diff_against="", no_raw=None):
+                calls.append(phase)
                 return 0
 
             with patch.object(engine, "_run_once", fake_run):
-                code = engine.run(make_args(eval_path, phase="before"))
+                code = engine.run(make_args(eval_path, dry_run=True))
 
         self.assertEqual(code, 0)
-        self.assertEqual(calls, ["before"])
+        self.assertEqual(calls, [""])
 
     def test_no_raw_removes_before_cache_after_diff(self):
         calls = []
@@ -89,9 +87,9 @@ class AutoDiffTests(unittest.TestCase):
             eval_path = write_eval(root)
             before_cache = os.path.join(root, "before-cache")
 
-            def fake_run(a, result=None):
-                calls.append((a.phase, a.no_raw))
-                if a.phase == "before":
+            def fake_run(a, result=None, phase="", diff_against="", no_raw=None):
+                calls.append((phase, no_raw, a.no_raw))
+                if phase == "before":
                     os.makedirs(before_cache)
                     result["cache_dir"] = before_cache
                 return 0
@@ -101,15 +99,18 @@ class AutoDiffTests(unittest.TestCase):
             self.assertFalse(os.path.exists(before_cache))
 
         self.assertEqual(code, 0)
-        self.assertEqual(calls, [("before", False), ("after", True)])
+        self.assertEqual(calls, [
+            ("before", False, True),
+            ("after", None, True),
+        ])
 
     def test_before_failure_stops_after(self):
         calls = []
         with tempfile.TemporaryDirectory() as root:
             eval_path = write_eval(root)
 
-            def fake_run(a, result=None):
-                calls.append(a.phase)
+            def fake_run(a, result=None, phase="", diff_against="", no_raw=None):
+                calls.append(phase)
                 return 1
 
             with patch.object(engine, "_run_once", fake_run):
