@@ -15,23 +15,11 @@ import sys
 import time
 from concurrent.futures import ThreadPoolExecutor
 
+import directories
+import registry
 from cards.base import CardContext
-from cards.coverage import CoverageCard
-from cards.diff import DiffCard
-from cards.disasm import DisasmCard
-from cards.edge import EdgeCard
-from cards.filter import FilterCard
-from cards.metrics import MetricsCard
-from cards.timing import TimingCard
-from gates.calls import CallsGate
-from gates.coverage import CoverageGate
 from infra import blender as blender_lib
 from infra import manifest, paths, runkey, target as targetfile
-
-# Registration lives here. Add a module by importing it and appending one entry.
-GATES = [CoverageGate(), CallsGate()]
-CARDS = [EdgeCard(), DisasmCard(), CoverageCard(), TimingCard(),
-         MetricsCard(), FilterCard(), DiffCard()]
 
 DEFAULT_KEEP_CACHE = 5
 
@@ -142,59 +130,71 @@ def _missing_needs(card, available_raw, products):
     return missing
 
 
+def _accept_card(registration, summary, ctx, products, public_products):
+    if summary.get("skipped"):
+        return
+    outputs = []
+    public = False
+    for key in registration.products:
+        product = ctx.product(key)
+        path = ctx.publish(key)
+        if not os.path.isfile(path):
+            raise RuntimeError(
+                "card %s did not produce %s: %s"
+                % (registration.card.name, key, path))
+        products.add(key)
+        outputs.append(product.path)
+        if not product.internal or ctx.test:
+            public_products[key] = product.path
+            public = True
+    if outputs:
+        summary["output"] = outputs[0]
+        if len(outputs) > 1:
+            summary["extra_outputs"] = outputs[1:]
+        summary["public"] = public
+
+
 def _run_cards(ctx, data):
     available_raw = set(ctx.raw_paths)
     products = set()
+    public_products = {}
     summaries = {}
-    coverage = next((card for card in CARDS if card.name == "coverage"), None)
+    coverage = next(
+        (item for item in registry.CARDS if item.card.name == "coverage"), None)
+
+    def build(registration):
+        card = registration.card
+        missing = _missing_needs(card, available_raw, products)
+        if missing:
+            raise RuntimeError(
+                "card %s missing inputs: %s" % (card.name, missing))
+        return card.build(ctx)
 
     with ThreadPoolExecutor(max_workers=1) as pool:
-        coverage_future = None
-        if coverage is not None:
-            missing = _missing_needs(coverage, available_raw, products)
-            if missing:
-                raise RuntimeError(
-                    "card %s missing inputs: %s" % (coverage.name, missing))
-            coverage_future = pool.submit(coverage.build, ctx)
+        coverage_future = pool.submit(build, coverage) if coverage is not None else None
 
-        for card in CARDS:
-            if card is coverage:
+        for registration in registry.CARDS:
+            if registration is coverage:
                 continue
-            missing = _missing_needs(card, available_raw, products)
-            if missing:
-                raise RuntimeError(
-                    "card %s missing inputs: %s" % (card.name, missing))
-
-            summary = card.build(ctx)
-            if summary.get("output"):
-                products.add(summary["output"])
-            products.update(summary.get("extra_outputs") or ())
-            summaries[card.name] = summary
+            summary = build(registration)
+            _accept_card(registration, summary, ctx, products, public_products)
+            summaries[registration.card.name] = summary
 
         if coverage_future is not None:
             summary = coverage_future.result()
-            if summary.get("output"):
-                products.add(summary["output"])
-            products.update(summary.get("extra_outputs") or ())
-            summaries[coverage.name] = summary
+            _accept_card(coverage, summary, ctx, products, public_products)
+            summaries[coverage.card.name] = summary
 
-    ordered = [summaries[card.name] for card in CARDS
-               if card.name in summaries]
-    data["cards"] = ordered
-    data["products"] = {}
-    for item in ordered:
-        if not item.get("public", True):
-            continue
-        if item.get("output"):
-            data["products"][item.get("name", "?")] = item["output"]
-        for output in item.get("extra_outputs") or ():
-            data["products"][os.path.splitext(output)[0]] = output
+    data["cards"] = [summaries[item.card.name] for item in registry.CARDS
+                     if item.card.name in summaries]
+    data["products"] = public_products
     return data
 
 
 def _drop_internal(out_dir, test):
     if not test:
-        shutil.rmtree(os.path.join(out_dir, "_internal"), ignore_errors=True)
+        shutil.rmtree(os.path.join(out_dir, directories.INTERNAL_DIR),
+                      ignore_errors=True)
 
 
 def _finalize_out(run_dir, staging_dir, data, force=False):
@@ -228,7 +228,7 @@ def run(a):
     except targetfile.TargetError as exc:
         return fail(str(exc))
 
-    blender = paths.norm(a.blender or paths.DEFAULT_BLENDER)
+    blender = paths.norm(a.blender or directories.BLENDER_EXE)
     if not os.path.isfile(blender):
         return fail("找不到插桩 blender: %s" % blender)
 
@@ -247,9 +247,9 @@ def run(a):
 
     key = runkey.run_key(eval_path, a.node, blender, pdb, target, options)
     hash8 = runkey.short(key)
-    out_root = paths.norm(a.out or paths.DEFAULT_OUT)
+    out_root = paths.norm(a.out or directories.OUT_DIR)
     run_dir = os.path.join(out_root, paths.safe_name(a.node), hash8)
-    cache_dir = os.path.join(paths.CACHE, paths.safe_name(a.node), hash8)
+    cache_dir = os.path.join(directories.CACHE_DIR, paths.safe_name(a.node), hash8)
     work_dir = cache_dir + ".tmp"
 
     state = manifest.classify(run_dir, key)
@@ -274,14 +274,14 @@ def run(a):
     print("options   :", json.dumps(options, ensure_ascii=False))
     print("run dir   :", run_dir)
     print("cache dir :", cache_dir)
-    print("gates     :", [g.name for g in GATES] or "(未注册)")
-    print("cards     :", [c.name for c in CARDS] or "(未注册)")
+    print("gates     :", [g.name for g in registry.GATES] or "(未注册)")
+    print("cards     :", [item.card.name for item in registry.CARDS] or "(未注册)")
 
     if a.dry_run:
         print(">> dry-run：只检查路径和重复状态，不启动 blender")
         return 0
 
-    if not GATES:
+    if not registry.GATES:
         return fail("没有注册任何闸门")
 
     os.makedirs(os.path.dirname(work_dir), exist_ok=True)
@@ -291,7 +291,7 @@ def run(a):
         key, hash8, a.node, eval_path, target["blend"], blender, pdb, options))
 
     gate_specs = ",".join(
-        "%s:%s" % (type(g).__module__, type(g).__qualname__) for g in GATES)
+        "%s:%s" % (type(g).__module__, type(g).__qualname__) for g in registry.GATES)
     cmd = blender_lib.command(
         blender, eval_path, work_dir, a.node,
         blend=a.blend, obj=a.obj, mod=a.mod, param=a.param, gates=gate_specs,
@@ -325,7 +325,7 @@ def run(a):
 
     print(">> raw :", json.dumps(data["raw"], ensure_ascii=False))
     print(">> work:", work_dir)
-    if not CARDS:
+    if not registry.CARDS:
         print(">> 模块 2 完成：raw 已生成，翻译卡片尚未注册")
         return 0
 
@@ -336,7 +336,7 @@ def run(a):
 
     ctx = CardContext(
         work_dir, staging_dir, target, a.node, data, blender, pdb, data["raw"],
-        options=options, test=a.test)
+        registry.PRODUCTS, options=options, test=a.test)
     try:
         _run_cards(ctx, data)
         _drop_internal(staging_dir, a.test)
@@ -405,7 +405,7 @@ def translate(a):
         options["coverage_keep_all"] = a.keep_all
     data["options"] = options
 
-    out_root = paths.norm(a.out or paths.DEFAULT_OUT)
+    out_root = paths.norm(a.out or directories.OUT_DIR)
     run_dir = os.path.join(out_root, paths.safe_name(node), hash8)
     os.makedirs(os.path.dirname(run_dir), exist_ok=True)
     staging_dir = os.path.join(
@@ -415,7 +415,7 @@ def translate(a):
 
     ctx = CardContext(
         cache_dir, staging_dir, status.get("target", {}), node, data,
-        blender, pdb, raw, options=options, test=a.test)
+        blender, pdb, raw, registry.PRODUCTS, options=options, test=a.test)
     try:
         _run_cards(ctx, data)
         _drop_internal(staging_dir, a.test)
@@ -441,7 +441,7 @@ def validate(a):
     except targetfile.TargetError as exc:
         return fail(str(exc))
 
-    blender = paths.norm(a.blender or paths.DEFAULT_BLENDER)
+    blender = paths.norm(a.blender or directories.BLENDER_EXE)
     if not os.path.isfile(blender):
         return fail("找不到插桩 blender: %s" % blender)
 
@@ -449,8 +449,7 @@ def validate(a):
     if not spec:
         return fail("eval 里没有 NODE，且没有 --measure-node")
 
-    script = os.path.join(paths.ROOT, "frag", "validate.py")
-    cmd = [blender, "--background", "--python", script, "--",
+    cmd = [blender, "--background", "--python", directories.VALIDATE_SCRIPT, "--",
            "--eval", eval_path, "--measure-node", spec]
     print(">>", " ".join(cmd))
     proc = subprocess.run(
@@ -502,7 +501,7 @@ def main():
     p.add_argument("--keep-all", action="store_true",
                    help="coverage.json 不过滤路径（默认只留 source/ + intern/）")
     p.add_argument("--test", action="store_true",
-                   help="保留 disasm/timing/return 中间 JSON 供检查")
+                   help="保留 disasm/timing 中间 JSON 供检查")
     p.add_argument("--phase", choices=("", "before", "after"), default="",
                    help="boundary 对比阶段：before/after")
     p.add_argument("--measure-node", default="",
@@ -521,7 +520,7 @@ def main():
     t.add_argument("--keep-all", action="store_true", default=None,
                    help="覆盖 cache 里的 coverage_keep_all 设置")
     t.add_argument("--test", action="store_true",
-                   help="保留 disasm/timing/return 中间 JSON 供检查")
+                   help="保留 disasm/timing 中间 JSON 供检查")
 
     a = ap.parse_args()
     if a.cmd == "run":

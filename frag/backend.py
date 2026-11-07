@@ -16,14 +16,14 @@ ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 if ROOT not in sys.path:
     sys.path.insert(0, ROOT)
 
+import directories
+import registry
 from infra import paths
 from infra import target as targetfile
 
-ENGINE = os.path.join(ROOT, "engine.py")
-
 
 def _run_engine(args):
-    cmd = [sys.executable, ENGINE] + args
+    cmd = [sys.executable, directories.ENGINE_SCRIPT] + args
     print(">>", " ".join(cmd))
     proc = subprocess.run(
         cmd, text=True, encoding="utf-8", errors="replace",
@@ -130,7 +130,8 @@ def main():
     print(">> before  : %s" % before_cache)
     print(">> after   : %s" % (run_dir or "?"))
     if run_dir:
-        print(">> diff    : %s" % os.path.join(run_dir, "diff.json"))
+        print(">> diff    : %s" % os.path.join(
+            run_dir, registry.PRODUCTS["diff"].path))
     return 0
 
 

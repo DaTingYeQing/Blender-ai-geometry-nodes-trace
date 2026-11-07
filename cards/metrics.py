@@ -46,13 +46,13 @@ def _out_degrees(path):
 
 class MetricsCard(TranslationCard):
     name = "metrics"
-    needs = ("disasm.json", "raw:edges")
+    needs = ("disasm", "raw:edges")
 
     def build(self, ctx):
-        with open(ctx.input("disasm.json"), encoding="utf-8") as fh:
+        with open(ctx.input("disasm"), encoding="utf-8") as fh:
             disasm = json.load(fh)
 
-        timing_path = ctx.input("timing.json")
+        timing_path = ctx.input("timing")
         timing = {}
         if os.path.isfile(timing_path):
             with open(timing_path, encoding="utf-8") as fh:
@@ -135,7 +135,7 @@ class MetricsCard(TranslationCard):
             "fields": list(FIELDS),
         }
 
-        path = ctx.out("functions.jsonl")
+        path = ctx.out("metrics")
         with open(path, "w", encoding="utf-8") as fh:
             fh.write(json.dumps({"_meta": meta}, ensure_ascii=False,
                                 separators=(",", ":")))
@@ -150,5 +150,4 @@ class MetricsCard(TranslationCard):
             "functions": len(rows),
             "timing_matched": meta["timing_matched"],
             "duplicate_rvas": duplicates,
-            "output": "functions.jsonl",
         }

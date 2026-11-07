@@ -14,13 +14,13 @@ import time
 from collections import Counter
 from concurrent.futures import ThreadPoolExecutor
 
-from infra import paths
+import directories
 
 from .base import TranslationCard
 
-LLVM_COV = os.path.join(paths.LLVM_BIN, "llvm-cov.exe")
-LLVM_PROFDATA = os.path.join(paths.LLVM_BIN, "llvm-profdata.exe")
-SOURCE_ROOT = os.path.normpath(os.path.join(paths.ROOT, os.pardir, "blender-4.5.0"))
+LLVM_COV = directories.LLVM_COV_EXE
+LLVM_PROFDATA = directories.LLVM_PROFDATA_EXE
+SOURCE_ROOT = directories.SOURCE_DIR
 
 KEEP_PREFIXES = ("source/", "intern/")
 HEADER_EXT = (".hh", ".h", ".hpp", ".hxx", ".inl", ".ipp", ".inc")
@@ -217,7 +217,7 @@ class CoverageCard(TranslationCard):
             keep_all = bool(ctx.options.get("coverage_keep_all"))
             result = build_result(per_file, scanned, total, counts,
                                   eval_only=not keep_all)
-            path = ctx.out("coverage.json")
+            path = ctx.out("coverage")
             with open(path, "w", encoding="utf-8") as fh:
                 fh.write(dumps(result))
 
@@ -227,7 +227,6 @@ class CoverageCard(TranslationCard):
                 "files": result["meta"]["file_count"],
                 "lines": result["meta"]["line_count"],
                 "functions": result["meta"].get("function_count"),
-                "output": "coverage.json",
             }
         except Exception:
             print("!! coverage work dir kept:", temp_dir)

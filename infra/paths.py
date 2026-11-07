@@ -1,15 +1,8 @@
 # -*- coding: utf-8 -*-
-"""Default paths and filesystem helpers for CovTrace."""
+"""Filesystem helpers for CovTrace."""
 
 import os
 import re
-
-ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-DEFAULT_BLENDER = r"D:\blender-src\build_windows_x64_ClangCovTrace\bin\blender.exe"
-DEFAULT_OUT = os.path.join(ROOT, "out")
-CACHE = os.path.join(ROOT, "cache")
-LLVM_BIN = r"D:\tools\llvm\bin"
-BOOTSTRAP = os.path.join(ROOT, "bootstrap.py")
 
 _SAFE = re.compile(r"[^A-Za-z0-9_.-]+")
 

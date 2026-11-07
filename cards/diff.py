@@ -19,9 +19,9 @@ def _load_edge(path):
         return json.load(fh)
 
 
-def _load_run(path, blender):
+def _load_run(path, blender, edge_product):
     path = os.path.abspath(path)
-    edge = os.path.join(path, "edge.json")
+    edge = os.path.join(path, edge_product)
     if os.path.isfile(edge):
         return _load_edge(edge)
     funcs = os.path.join(path, "functions.bin")
@@ -70,14 +70,14 @@ class DiffCard(TranslationCard):
         if not other:
             return {"name": self.name, "skipped": True}
 
-        after_path = ctx.out("edge.json")
+        after_path = ctx.out("edge")
         if os.path.isfile(after_path):
             after = _load_edge(after_path)
         else:
             after = symbols.symbolize(
                 ctx.raw("functions"), ctx.raw("edges"), ctx.blender,
                 with_addresses=True)
-        before = _load_run(other, ctx.blender)
+        before = _load_run(other, ctx.blender, ctx.product("edge").path)
 
         af, ae = _sets(after)
         bf, be = _sets(before)
@@ -127,7 +127,7 @@ class DiffCard(TranslationCard):
             },
         }
 
-        path = ctx.out("diff.json")
+        path = ctx.out("diff")
         with open(path, "w", encoding="utf-8") as fh:
             json.dump(report, fh, ensure_ascii=False, indent=1)
             fh.write("\n")
@@ -138,5 +138,4 @@ class DiffCard(TranslationCard):
             "removed_functions": report["removed"]["function_count"],
             "added_edges_raw": report["added"]["edge_count_raw"],
             "added_edges_dedup": report["added"]["edge_count_dedup"],
-            "output": "diff.json",
         }

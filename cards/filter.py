@@ -26,10 +26,10 @@ def _read_rows(path):
 
 class FilterCard(TranslationCard):
     name = "filter"
-    needs = ("functions.jsonl",)
+    needs = ("metrics",)
 
     def build(self, ctx):
-        rows = _read_rows(ctx.out("functions.jsonl"))
+        rows = _read_rows(ctx.out("metrics"))
         kept = [row["rva"] for row in rows]
         dropped = []
 
@@ -46,7 +46,7 @@ class FilterCard(TranslationCard):
             "dropped": dropped,
         }
 
-        path = ctx.out("filter.json")
+        path = ctx.out("filter")
         with open(path, "w", encoding="utf-8") as fh:
             json.dump(report, fh, ensure_ascii=False, indent=1)
             fh.write("\n")
@@ -56,5 +56,4 @@ class FilterCard(TranslationCard):
             "functions": len(rows),
             "kept": len(kept),
             "dropped": len(dropped),
-            "output": "filter.json",
         }

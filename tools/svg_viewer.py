@@ -17,7 +17,10 @@ import re
 import sys
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-OUT = os.path.join(ROOT, "out")
+if ROOT not in sys.path:
+    sys.path.insert(0, ROOT)
+
+import directories
 
 HTML = r"""<!DOCTYPE html>
 <html lang="zh">
@@ -336,10 +339,10 @@ def build(svg_path, title):
 
 
 def find_svg(hash8):
-    exact = glob.glob(os.path.join(OUT, "*", hash8, "*.svg"))
+    exact = glob.glob(os.path.join(directories.OUT_DIR, "*", hash8, "*.svg"))
     if exact:
         return sorted(exact)
-    return sorted(p for p in glob.glob(os.path.join(OUT, "*", "*", "*.svg"))
+    return sorted(p for p in glob.glob(os.path.join(directories.OUT_DIR, "*", "*", "*.svg"))
                   if os.path.basename(os.path.dirname(p)).startswith(hash8))
 
 
@@ -383,7 +386,7 @@ def main():
             print(">> 多个 svg，使用最新的: %s" % svg_path)
     else:
         avail = sorted({os.path.basename(os.path.dirname(p))
-                        for p in glob.glob(os.path.join(OUT, "*", "*", "*.svg"))})
+                        for p in glob.glob(os.path.join(directories.OUT_DIR, "*", "*", "*.svg"))})
         print("!! 需要指定哈希，例如: python tools/svg_viewer.py 7343650d",
               file=sys.stderr)
         if avail:

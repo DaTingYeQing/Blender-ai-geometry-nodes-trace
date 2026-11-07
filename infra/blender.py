@@ -3,7 +3,7 @@
 
 import subprocess
 
-from . import paths
+import directories
 
 
 def command(blender, eval_path, work_dir, node, blend="", obj="", mod="", param="",
@@ -11,7 +11,7 @@ def command(blender, eval_path, work_dir, node, blend="", obj="", mod="", param=
     """The blend is opened by bootstrap from TARGET before the window opens."""
     cmd = [
         blender, "--background",
-        "--python", paths.BOOTSTRAP,
+        "--python", directories.BOOTSTRAP_SCRIPT,
         "--",
         "--eval", eval_path,
         "--work", work_dir,

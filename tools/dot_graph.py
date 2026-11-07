@@ -16,17 +16,22 @@ import subprocess
 import sys
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-OUT = os.path.join(ROOT, "out")
-DEFAULT_DOT = r"D:\qcachegrind074-x86\dot.exe"
+if ROOT not in sys.path:
+    sys.path.insert(0, ROOT)
+
+import directories
+import registry
 
 
 def find_edge_json(hash8):
-    """Find out/*/<hash8>/edge.json. Accept an unambiguous hash prefix."""
-    exact = glob.glob(os.path.join(OUT, "*", hash8, "edge.json"))
+    """Find a registered edge product. Accept an unambiguous hash prefix."""
+    edge_product = registry.PRODUCTS["edge"].path
+    exact = glob.glob(os.path.join(
+        directories.OUT_DIR, "*", hash8, edge_product))
     if exact:
         return sorted(exact)
-    return sorted(p for p in glob.glob(os.path.join(OUT, "*", "*", "edge.json"))
-                  if os.path.basename(os.path.dirname(p)).startswith(hash8))
+    return sorted(glob.glob(os.path.join(
+        directories.OUT_DIR, "*", hash8 + "*", edge_product)))
 
 
 def short_name(name, limit=64):
@@ -101,7 +106,7 @@ def main():
                     help="render PNG (default)")
     ap.add_argument("-svg", "--svg", action="store_true", dest="svg",
                     help="render SVG")
-    ap.add_argument("--dot", default=DEFAULT_DOT, help="dot.exe path")
+    ap.add_argument("--dot", default=directories.DOT_EXE, help="dot.exe path")
     a = ap.parse_args()
 
     if a.edge_json:
@@ -112,8 +117,9 @@ def main():
         run_id = a.hash8 or os.path.basename(os.path.dirname(edge_path))
     else:
         if not a.hash8:
-            avail = sorted({os.path.basename(os.path.dirname(p))
-                            for p in glob.glob(os.path.join(OUT, "*", "*", "edge.json"))})
+            avail = sorted({
+                os.path.relpath(p, directories.OUT_DIR).split(os.sep)[1]
+                for p in find_edge_json("")})
             print("!! 需要指定哈希，例如: python tools/dot_graph.py 7343650d",
                   file=sys.stderr)
             if avail:
