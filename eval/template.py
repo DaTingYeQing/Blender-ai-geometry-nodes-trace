@@ -13,7 +13,8 @@ TARGET = {
     "node_tree": "",  # 可选：只用于校验；留空表示用修改器的 node_group
 }
 
-# 要测量边界的节点：节点名、label 或 bl_idname 均可（如 "设置位置" / "setpos"）。
+# 可选：要测量边界的节点，节点名、label 或 bl_idname 均可。
+# 填写后普通 engine.py run 自动执行 before/after 并生成 diff.json，无需额外 CLI。
 # v1 要求最多一个几何输入、正好一个几何输出；工程里不能有 Repeat/Foreach/Simulation 区域。
 NODE = "设置位置"
 

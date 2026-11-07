@@ -7,6 +7,7 @@ rebuilds the final JSON products without launching Blender again.
 """
 
 import argparse
+import copy
 import json
 import os
 import shutil
@@ -214,6 +215,40 @@ def _load_status(work_dir):
 
 
 def run(a):
+    if a.phase or a.diff_against or a.dry_run:
+        return _run_once(a)
+
+    eval_path = paths.norm(a.eval)
+    if not os.path.isfile(eval_path):
+        return _run_once(a)
+    try:
+        measure_spec = a.measure_node or targetfile.measure_node(eval_path)
+    except targetfile.TargetError as exc:
+        return fail(str(exc))
+    if not measure_spec:
+        return _run_once(a)
+
+    print(">> auto diff:", measure_spec)
+    before = copy.copy(a)
+    before.phase = "before"
+    before.measure_node = measure_spec
+    before.no_raw = False
+    before_result = {}
+    code = _run_once(before, before_result)
+    if code:
+        return code
+
+    after = copy.copy(a)
+    after.phase = "after"
+    after.measure_node = measure_spec
+    after.diff_against = before_result["cache_dir"]
+    code = _run_once(after)
+    if not code and a.no_raw:
+        shutil.rmtree(before_result["cache_dir"], ignore_errors=True)
+    return code
+
+
+def _run_once(a, result=None):
     eval_path = paths.norm(a.eval)
     if not os.path.isfile(eval_path):
         return fail("找不到求值脚本: %s" % eval_path)
@@ -373,6 +408,8 @@ def run(a):
 
     print(">> products:", json.dumps(data["products"], ensure_ascii=False))
     print(">> run dir :", run_dir)
+    if result is not None:
+        result.update(cache_dir=cache_dir, run_dir=run_dir)
     return 0
 
 
@@ -483,10 +520,11 @@ def main():
     ap = argparse.ArgumentParser(prog="engine.py")
     sub = ap.add_subparsers(dest="cmd", required=True)
 
-    p = sub.add_parser("run", help="跑一次求值并生成产物")
+    p = sub.add_parser("run", help="跑求值并生成产物；有 NODE 时自动生成 diff")
     p.add_argument("--blend", default="", help="覆盖 TARGET['blend']")
     p.add_argument("--eval", required=True, help="求值脚本 .py（含 TARGET）")
-    p.add_argument("--node", required=True, help="节点名，用于目录命名和 between 解析")
+    p.add_argument("--node", required=True,
+                   help="输出目录名（不是 eval 里要测量的 NODE）")
     p.add_argument("--obj", default="", help="覆盖 TARGET['object']")
     p.add_argument("--mod", default="", help="覆盖 TARGET['modifier']")
     p.add_argument("--param", default="", help="覆盖 TARGET['param']")
