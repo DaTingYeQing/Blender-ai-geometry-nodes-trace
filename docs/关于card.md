@@ -27,15 +27,20 @@
 | `timing` | `raw:timings`、exe/PDB | `_internal/timing.json`（`--test` 发布） | 解析 `BTIM` 记录，把 ticks 换成 ns，解析 RVA 到函数名，输出 `rva/count/total_*/mean_*/self_share` |
 | `metrics` | `disasm.json`、`timing.json`、`raw:edges` | `functions.jsonl` | 按 RVA 合并三份数据；从 `edges.bin` 算每个 caller 的不同 callee 数作为 `out_degree`；保留源字段，派生字段不落盘 |
 | `filter` | `functions.jsonl` | `filter.json` | 占位卡片：当前保留全部函数，输出 rva 决策列表 |
+| `diff` | `raw:functions`、`raw:edges`、`options.diff_against` | `diff.json` | 仅在 `--diff-against` 给出时执行：当前（after）运行与 before cache/out 做函数/边集合差；边按符号名去重；最后执行 |
 
 ## 卡片之间的依赖
 
 ```text
 edge ──> (metrics 用 raw:edges)
 disasm ──────────────┐
-timing ──────────────┴─> metrics ──> filter
+timing ──────────────┴─> metrics ──> filter ──> diff（可选，最后）
 coverage（独立）
 ```
+
+`diff` 是最后一张卡：读当前 run 的 `functions.bin/edges.bin`（或已生成的 `edge.json`），
+再读 `options.diff_against` 指向的 before 目录里的 `functions.bin/edges.bin`（或 `edge.json`），
+按 RVA 求差、按符号名去重，写 `diff.json`。
 
 - `metrics` 不依赖 PDB，也不依赖 `edge.json`，出度直接读 `edges.bin`；
 - `filter` 只读 `functions.jsonl`，输出 rva 决策列表。

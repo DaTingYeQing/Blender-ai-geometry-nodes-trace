@@ -10,12 +10,14 @@ import argparse
 import json
 import os
 import shutil
+import subprocess
 import sys
 import time
 from concurrent.futures import ThreadPoolExecutor
 
 from cards.base import CardContext
 from cards.coverage import CoverageCard
+from cards.diff import DiffCard
 from cards.disasm import DisasmCard
 from cards.edge import EdgeCard
 from cards.filter import FilterCard
@@ -29,7 +31,7 @@ from infra import manifest, paths, runkey, target as targetfile
 # Registration lives here. Add a module by importing it and appending one entry.
 GATES = [CoverageGate(), CallsGate()]
 CARDS = [EdgeCard(), DisasmCard(), CoverageCard(), TimingCard(),
-         MetricsCard(), FilterCard()]
+         MetricsCard(), FilterCard(), DiffCard()]
 
 DEFAULT_KEEP_CACHE = 5
 
@@ -231,7 +233,18 @@ def run(a):
         return fail("找不到插桩 blender: %s" % blender)
 
     pdb = paths.pdb_for(blender)
+    measure_spec = a.measure_node or targetfile.measure_node(eval_path)
+    if a.phase and not measure_spec:
+        return fail("--phase 需要 eval 里的 NODE 或 --measure-node")
+
     options = {"coverage_keep_all": True} if a.keep_all else {}
+    if a.phase:
+        options["phase"] = a.phase
+    if measure_spec:
+        options["measure_node"] = measure_spec
+    if a.diff_against:
+        options["diff_against"] = os.path.abspath(a.diff_against)
+
     key = runkey.run_key(eval_path, a.node, blender, pdb, target, options)
     hash8 = runkey.short(key)
     out_root = paths.norm(a.out or paths.DEFAULT_OUT)
@@ -240,8 +253,8 @@ def run(a):
     work_dir = cache_dir + ".tmp"
 
     state = manifest.classify(run_dir, key)
-    if state == "duplicate":
-        return fail("你要的东西已经跑过了：%s" % run_dir)
+    if state == "duplicate" and not a.force:
+        return fail("你要的东西已经跑过了：%s\n  用 --force 覆盖" % run_dir)
     if state == "conflict" and not a.force:
         return fail("目录已存在但是另一次运行：%s\n  用 --force 覆盖" % run_dir)
     if state == "incomplete" and not a.force:
@@ -281,7 +294,8 @@ def run(a):
         "%s:%s" % (type(g).__module__, type(g).__qualname__) for g in GATES)
     cmd = blender_lib.command(
         blender, eval_path, work_dir, a.node,
-        blend=a.blend, obj=a.obj, mod=a.mod, param=a.param, gates=gate_specs)
+        blend=a.blend, obj=a.obj, mod=a.mod, param=a.param, gates=gate_specs,
+        phase=a.phase, measure_node=measure_spec)
     env = dict(os.environ)
     env.setdefault("LLVM_PROFILE_FILE", "NUL")
     blender_lib.run(cmd, env=env)
@@ -416,7 +430,57 @@ def translate(a):
     return 0
 
 
+def validate(a):
+    """Open the blend and check zones/node without arming any gate."""
+    eval_path = paths.norm(a.eval)
+    if not os.path.isfile(eval_path):
+        return fail("找不到求值脚本: %s" % eval_path)
+    try:
+        target = targetfile.load(eval_path)
+        targetfile.validate(target)
+    except targetfile.TargetError as exc:
+        return fail(str(exc))
+
+    blender = paths.norm(a.blender or paths.DEFAULT_BLENDER)
+    if not os.path.isfile(blender):
+        return fail("找不到插桩 blender: %s" % blender)
+
+    spec = a.measure_node or targetfile.measure_node(eval_path)
+    if not spec:
+        return fail("eval 里没有 NODE，且没有 --measure-node")
+
+    script = os.path.join(paths.ROOT, "frag", "validate.py")
+    cmd = [blender, "--background", "--python", script, "--",
+           "--eval", eval_path, "--measure-node", spec]
+    print(">>", " ".join(cmd))
+    proc = subprocess.run(
+        cmd, text=True, encoding="utf-8", errors="replace",
+        capture_output=True)
+    sys.stdout.write(proc.stdout)
+    sys.stderr.write(proc.stderr)
+
+    info = None
+    for line in proc.stdout.splitlines():
+        if line.startswith(">> validation:"):
+            try:
+                info = json.loads(line[len(">> validation:"):].strip())
+            except ValueError:
+                info = None
+    if info is None:
+        print("!! 校验没有产出结果", file=sys.stderr)
+        return 1
+    if not info.get("ok"):
+        return 1
+    return proc.returncode
+
+
 def main():
+    for stream in (sys.stdout, sys.stderr):
+        try:
+            stream.reconfigure(encoding="utf-8")
+        except Exception:
+            pass
+
     ap = argparse.ArgumentParser(prog="engine.py")
     sub = ap.add_subparsers(dest="cmd", required=True)
 
@@ -439,6 +503,17 @@ def main():
                    help="coverage.json 不过滤路径（默认只留 source/ + intern/）")
     p.add_argument("--test", action="store_true",
                    help="保留 disasm/timing/return 中间 JSON 供检查")
+    p.add_argument("--phase", choices=("", "before", "after"), default="",
+                   help="boundary 对比阶段：before/after")
+    p.add_argument("--measure-node", default="",
+                   help="要测量的节点（覆盖 eval 里的 NODE）")
+    p.add_argument("--diff-against", default="",
+                   help="before 运行的 cache/out 目录，DiffCard 最后相减")
+
+    v = sub.add_parser("validate", help="只校验工程和节点，不跑求值")
+    v.add_argument("--eval", required=True, help="求值脚本 .py")
+    v.add_argument("--measure-node", default="")
+    v.add_argument("--blender", default="")
 
     t = sub.add_parser("translate", help="用 cache 里的 raw 重跑翻译卡片")
     t.add_argument("cache_dir", help="cache/<node>/<hash8> 目录")
@@ -453,6 +528,8 @@ def main():
         return run(a)
     if a.cmd == "translate":
         return translate(a)
+    if a.cmd == "validate":
+        return validate(a)
     return 2
 
 

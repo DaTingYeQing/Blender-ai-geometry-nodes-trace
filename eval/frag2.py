@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-"""frag2 示例：碎片数量和种子各取两种，触发四次求值。"""
+"""frag2：破碎场景，测量 Set Position 节点的前后差值。"""
 
 TARGET = {
     "blend": r"C:\Users\zjn13\Desktop\PI_work\blender ai geo\破碎修改器.blend",
@@ -8,6 +8,8 @@ TARGET = {
     "param": "碎片数量",
     "node_tree": "",
 }
+
+NODE = "设置位置"
 
 
 def _input_id(ctx, display):

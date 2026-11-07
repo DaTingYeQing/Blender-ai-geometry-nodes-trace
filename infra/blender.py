@@ -6,7 +6,8 @@ import subprocess
 from . import paths
 
 
-def command(blender, eval_path, work_dir, node, blend="", obj="", mod="", param="", gates=""):
+def command(blender, eval_path, work_dir, node, blend="", obj="", mod="", param="",
+            gates="", phase="", measure_node=""):
     """The blend is opened by bootstrap from TARGET before the window opens."""
     cmd = [
         blender, "--background",
@@ -23,6 +24,8 @@ def command(blender, eval_path, work_dir, node, blend="", obj="", mod="", param=
         ("--obj", obj),
         ("--mod", mod),
         ("--param", param),
+        ("--phase", phase),
+        ("--measure-node", measure_node),
     ):
         if value:
             cmd += [flag, value]

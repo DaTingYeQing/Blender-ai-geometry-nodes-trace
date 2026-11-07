@@ -31,6 +31,8 @@ def parse_args():
     ap.add_argument("--obj", default="")
     ap.add_argument("--mod", default="")
     ap.add_argument("--param", default="")
+    ap.add_argument("--phase", default="", choices=("", "before", "after"))
+    ap.add_argument("--measure-node", default="")
     return ap.parse_args(argv)
 
 
@@ -73,6 +75,12 @@ class Context:
 
 
 def main():
+    for stream in (sys.stdout, sys.stderr):
+        try:
+            stream.reconfigure(encoding="utf-8")
+        except Exception:
+            pass
+
     args = parse_args()
     os.makedirs(args.work, exist_ok=True)
     try:
@@ -100,6 +108,21 @@ def main():
                 "node tree mismatch: modifier has %r, TARGET says %r"
                 % (mod.node_group.name, target["node_tree"]))
         param_id = resolve_param(mod.node_group, target["param"])
+
+        from frag import targeting
+
+        targeting.validate_zones(mod.node_group)
+        spec = args.measure_node or targetfile.measure_node(args.eval)
+        measure = None
+        if spec:
+            measure = targeting.resolve(mod.node_group, spec)
+        if args.phase:
+            if measure is None:
+                raise RuntimeError("--phase 需要 eval 里的 NODE 或 --measure-node")
+            targeting.rewire(measure, args.phase)
+            print(">> boundary:", json.dumps(
+                {"phase": args.phase, "measure": measure.describe()},
+                ensure_ascii=False))
 
         ns = runpy.run_path(args.eval, run_name="__covtrace_eval__")
         evaluate = ns.get("evaluate")

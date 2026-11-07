@@ -34,6 +34,29 @@ def load(eval_path):
     raise TargetError("求值脚本缺少 TARGET = {...}")
 
 
+def measure_node(eval_path):
+    """Read the optional NODE = "..." literal without executing the script."""
+    with open(eval_path, encoding="utf-8-sig") as fh:
+        source = fh.read()
+    try:
+        tree = ast.parse(source, filename=eval_path)
+    except SyntaxError as exc:
+        raise TargetError("求值脚本语法错误: %s" % exc)
+    for node in tree.body:
+        if not isinstance(node, ast.Assign):
+            continue
+        for item in node.targets:
+            if isinstance(item, ast.Name) and item.id == "NODE":
+                try:
+                    value = ast.literal_eval(node.value)
+                except ValueError:
+                    raise TargetError("NODE 必须是字符串字面量")
+                if not isinstance(value, str):
+                    raise TargetError("NODE 必须是字符串")
+                return value
+    return ""
+
+
 def merge(target, blend="", obj="", mod="", param=""):
     out = dict(target)
     for key, value in (
