@@ -57,9 +57,22 @@ def _function_rows(keys, table):
     return [table[key] for key in sorted(keys) if key in table]
 
 
+def _nodes_for(edges, funcs):
+    """边差的两端全部保留，外加没有任何边的新增/消失函数。"""
+    endpoints = {rva for pair in edges for rva in pair}
+    return endpoints | funcs
+
+
 def _edge_rows(edges, table):
-    pairs = sorted({(_name(table, a), _name(table, b)) for a, b in edges})
-    return [{"caller": a, "callee": b} for a, b in pairs]
+    rows = []
+    for caller, callee in sorted(edges):
+        rows.append({
+            "caller_rva": caller,
+            "callee_rva": callee,
+            "caller": _name(table, caller),
+            "callee": _name(table, callee),
+        })
+    return rows
 
 
 class DiffCard(TranslationCard):
@@ -82,10 +95,10 @@ class DiffCard(TranslationCard):
 
         af, ae = _sets(after)
         bf, be = _sets(before)
-        added_f = set(af) - set(bf)
-        removed_f = set(bf) - set(af)
         added_e = ae - be
         removed_e = be - ae
+        added_n = _nodes_for(added_e, set(af) - set(bf))
+        removed_n = _nodes_for(removed_e, set(bf) - set(af))
 
         measure = ""
         eval_path = (ctx.manifest or {}).get("eval") or ""
@@ -113,18 +126,16 @@ class DiffCard(TranslationCard):
                 "generated": time.strftime("%Y-%m-%d %H:%M:%S"),
             },
             "added": {
-                "functions": _function_rows(added_f, af),
+                "functions": _function_rows(added_n, af),
                 "edges": _edge_rows(added_e, af),
-                "function_count": len(added_f),
-                "edge_count_raw": len(added_e),
-                "edge_count_dedup": len(_edge_rows(added_e, af)),
+                "function_count": len(added_n),
+                "edge_count": len(added_e),
             },
             "removed": {
-                "functions": _function_rows(removed_f, bf),
+                "functions": _function_rows(removed_n, bf),
                 "edges": _edge_rows(removed_e, bf),
-                "function_count": len(removed_f),
-                "edge_count_raw": len(removed_e),
-                "edge_count_dedup": len(_edge_rows(removed_e, bf)),
+                "function_count": len(removed_n),
+                "edge_count": len(removed_e),
             },
         }
 
@@ -137,6 +148,6 @@ class DiffCard(TranslationCard):
             "name": self.name,
             "added_functions": report["added"]["function_count"],
             "removed_functions": report["removed"]["function_count"],
-            "added_edges_raw": report["added"]["edge_count_raw"],
-            "added_edges_dedup": report["added"]["edge_count_dedup"],
+            "added_edges": report["added"]["edge_count"],
+            "removed_edges": report["removed"]["edge_count"],
         }
