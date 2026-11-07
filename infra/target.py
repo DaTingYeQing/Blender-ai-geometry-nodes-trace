@@ -4,7 +4,7 @@
 import ast
 import os
 
-REQUIRED = ("blend", "object", "modifier", "param")
+REQUIRED = ("blend", "object", "modifier")
 
 
 class TargetError(Exception):

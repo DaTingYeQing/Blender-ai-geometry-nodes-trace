@@ -2,8 +2,8 @@
 """Boundary backend: validate, run before/after, let DiffCard write diff.json.
 
 Usage:
-  python frag/backend.py --eval eval/frag2.py
-  python frag/backend.py --eval eval/frag2.py --node my_boundary --force
+  python frag/backend.py --eval eval/_auto/<node>.py
+  python frag/backend.py --eval eval/_auto/<node>.py --node my_boundary --force
 """
 
 import argparse

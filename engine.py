@@ -293,7 +293,7 @@ def _run_once(a, result=None, phase="", diff_against="", no_raw=None):
     print("object    :", target["object"])
     print("modifier  :", target["modifier"])
     print("node tree :", target.get("node_tree") or "(修改器的 node_group)")
-    print("param     :", target["param"])
+    print("param     :", target.get("param") or "(自动全部 +1)")
     print("blender   :", blender)
     print("pdb       :", pdb if os.path.isfile(pdb) else "(缺失)")
     print("run key   :", key)

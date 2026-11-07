@@ -107,7 +107,8 @@ def main():
             raise RuntimeError(
                 "node tree mismatch: modifier has %r, TARGET says %r"
                 % (mod.node_group.name, target["node_tree"]))
-        param_id = resolve_param(mod.node_group, target["param"])
+        param_name = (target.get("param") or "").strip()
+        param_id = resolve_param(mod.node_group, param_name) if param_name else None
 
         from frag import targeting
 
@@ -132,6 +133,8 @@ def main():
         evaluate.__globals__.setdefault("time", time)
 
         def set_value(value):
+            if param_id is None:
+                raise RuntimeError("eval 用了 ctx.set_value，但 TARGET 没有 param")
             mod[param_id] = value
             obj.update_tag()
             t0 = time.perf_counter()
@@ -142,15 +145,89 @@ def main():
             dg = bpy.context.evaluated_depsgraph_get()
             return len(list(dg.object_instances))
 
+        TOUCHABLE_PREFIXES = (
+            "nodesocketfloat", "nodesocketint",
+            "nodesocketbool", "nodesocketvector",
+        )
+
+        def _plain_input(value):
+            if isinstance(value, bool) or isinstance(value, (int, float)):
+                return value
+            try:
+                return list(value)
+            except TypeError:
+                return str(value)
+
+        def _bump_input(item, current):
+            if isinstance(current, bool):
+                return not current
+            if isinstance(current, (int, float)):
+                value = current + 1
+                low = getattr(item, "min_value", None)
+                high = getattr(item, "max_value", None)
+                if low is not None:
+                    value = max(low, value)
+                if high is not None:
+                    value = min(high, value)
+                if value == current:
+                    if low is not None and current != low:
+                        value = low
+                    elif high is not None and current != high:
+                        value = high
+                    else:
+                        value = current - 1
+                if isinstance(current, int) and not isinstance(current, bool):
+                    value = int(value)
+                return value
+            try:
+                values = list(current)
+            except TypeError:
+                return None
+            return tuple(value + 1 for value in values)
+
+        def touch_inputs():
+            """Modifier interface 上的数值参数全部 +1（布尔取反），只触发一次更新。"""
+            tree = mod.node_group
+            touched = []
+            for item in tree.interface.items_tree:
+                if getattr(item, "item_type", "") != "SOCKET":
+                    continue
+                if getattr(item, "in_out", "") != "INPUT":
+                    continue
+                if not getattr(item, "socket_type", "").lower().startswith(TOUCHABLE_PREFIXES):
+                    continue
+                try:
+                    current = mod[item.identifier]
+                except Exception:
+                    continue
+                value = _bump_input(item, current)
+                if value is None:
+                    continue
+                mod[item.identifier] = value
+                touched.append({
+                    "name": item.name,
+                    "from": _plain_input(current),
+                    "to": _plain_input(value),
+                })
+            if not touched:
+                raise RuntimeError("interface 上没有可自动修改的数值参数")
+            obj.update_tag()
+            t0 = time.perf_counter()
+            bpy.context.view_layer.update()
+            ms = (time.perf_counter() - t0) * 1000.0
+            print(">> touched:", json.dumps(touched, ensure_ascii=False), "%.3f ms" % ms)
+            return ms
+
         ctx = Context()
         ctx.bpy = bpy
         ctx.target = target
         ctx.obj = obj
         ctx.mod = mod
         ctx.node_tree = mod.node_group
-        ctx.param = target["param"]
+        ctx.param = param_name
         ctx.param_id = param_id
         ctx.set_value = set_value
+        ctx.touch_inputs = touch_inputs
         ctx.instance_count = instance_count
 
         gates = load_gates(args.gates)
