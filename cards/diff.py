@@ -49,7 +49,8 @@ def _sets(data):
 
 def _name(table, rva):
     row = table.get(rva)
-    return row.get("name") if row else "0x%x" % rva
+    name = (row.get("name") if row else "") or ""
+    return "unknown" if name in ("", "?", "(unknown)") else name
 
 
 def _function_rows(keys, table):

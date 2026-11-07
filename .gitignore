@@ -7,3 +7,4 @@ cache/
 *.profraw
 *.profdata
 cov_show.txt
+.qoder

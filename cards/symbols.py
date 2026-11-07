@@ -203,7 +203,7 @@ def _export_function(name, f, ln, module, rva, mod_base, with_addresses):
 
 def _export_edge(an, af, al, cn, cf, cl, cr, ce, with_addresses):
     row = {
-        "caller": an or "(unknown)", "callee": cn or "?",
+        "caller": an or "unknown", "callee": cn or "unknown",
         "caller_file": af, "caller_line": al,
         "callee_file": cf, "callee_line": cl,
     }
