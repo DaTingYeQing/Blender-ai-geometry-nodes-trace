@@ -34,10 +34,14 @@ class CardContext:
             raise RuntimeError("unregistered product %r" % key) from None
 
     def _path(self, key, internal):
-        relative = self.product(key).path
-        if internal:
-            relative = os.path.join(directories.INTERNAL_DIR, relative)
-        path = os.path.normpath(os.path.join(self.out_dir, relative))
+        product = self.product(key)
+        relative = product.path
+        if product.cache:
+            path = os.path.normpath(os.path.join(self.work_dir, relative))
+        else:
+            if internal:
+                relative = os.path.join(directories.INTERNAL_DIR, relative)
+            path = os.path.normpath(os.path.join(self.out_dir, relative))
         os.makedirs(os.path.dirname(path), exist_ok=True)
         return path
 

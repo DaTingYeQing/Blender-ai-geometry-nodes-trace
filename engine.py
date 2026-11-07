@@ -144,6 +144,8 @@ def _accept_card(registration, summary, ctx, products, public_products):
                 % (registration.card.name, key, path))
         products.add(key)
         outputs.append(product.path)
+        if product.cache:
+            continue
         if not product.internal or ctx.test:
             public_products[key] = product.path
             public = True
@@ -352,6 +354,26 @@ def _run_once(a, result=None, phase="", diff_against="", no_raw=None):
 
     print(">> raw :", json.dumps(data["raw"], ensure_ascii=False))
     print(">> work:", work_dir)
+
+    if phase == "before":
+        _rebase(data, work_dir, cache_dir)
+        status_path = os.path.join(work_dir, "status.json")
+        if os.path.isfile(status_path):
+            status = _load_json(status_path)
+            _rebase(status, work_dir, cache_dir)
+            with open(status_path, "w", encoding="utf-8") as fh:
+                json.dump(status, fh, ensure_ascii=False, indent=1)
+                fh.write("\n")
+        if os.path.isdir(cache_dir):
+            shutil.rmtree(cache_dir)
+        os.replace(work_dir, cache_dir)
+        manifest.write(cache_dir, data)
+        _prune_cache(os.path.dirname(cache_dir), a.keep_cache)
+        print(">> cache:", cache_dir)
+        if result is not None:
+            result.update(cache_dir=cache_dir, run_dir="")
+        return 0
+
     if not registry.CARDS:
         print(">> 模块 2 完成：raw 已生成，翻译卡片尚未注册")
         return 0

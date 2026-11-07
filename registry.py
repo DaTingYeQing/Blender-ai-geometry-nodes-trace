@@ -19,6 +19,7 @@ from gates.coverage import CoverageGate
 class Product:
     path: str
     internal: bool = False
+    cache: bool = False
 
 
 @dataclass(frozen=True)
@@ -28,12 +29,12 @@ class CardRegistration:
 
 
 PRODUCTS = {
-    "edge": Product("edge.json"),
+    "edge": Product("edge.json", cache=True),
     "disasm": Product("disasm.json", internal=True),
     "coverage": Product("coverage.json"),
     "timing": Product("timing.json", internal=True),
-    "metrics": Product("functions.jsonl"),
-    "filter": Product("filter.json"),
+    "metrics": Product("functions.jsonl", cache=True),
+    "filter": Product("filter.json", cache=True),
     "diff": Product("diff.json"),
 }
 

@@ -47,17 +47,24 @@ coverage（独立）
 
 ## 公开 / 内部产物
 
-默认公开：
+默认公开（`out/<node>/<hash8>/`）：
 
 ```text
-edge.json
 coverage.json
-functions.jsonl
-filter.json
 run.json（manifest）
 ```
 
 eval 含 `NODE` 时，after 运行还会公开 `diff.json`。
+
+cache（`cache/<node>/<hash8>/`，随 raw 保留，按 `--keep-cache` 清理）：
+
+```text
+edge.json
+functions.jsonl
+filter.json
+```
+
+before 运行只采集 raw 到 cache，不生成 out 产物。
 
 默认内部、卡片跑完后删除：
 
