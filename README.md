@@ -3,7 +3,7 @@
 Collects function calls, call edges, timings, and line coverage from an instrumented Blender build, then translates them into readable JSON and graph artifacts.
 
 
-This is an extension of the `https://github.com/DaTingYeQing/Blender-ai-geometry-nodes` project. This Blender build cannot be used standalone as software.
+This is an extension of the https://github.com/DaTingYeQing/Blender-ai-geometry-nodes project. This Blender build cannot be used standalone as software.
 
 ## Layout
 
