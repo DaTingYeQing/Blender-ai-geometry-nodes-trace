@@ -1,0 +1,20 @@
+# 知识卡导出索引文件
+schema_version: 1
+locale: zh-CN
+commit: dc9b74640370fb5631e52316d747a709c60a4120
+branch: master
+exported_at: "2026-11-07T12:40:25Z"
+modules:
+    root:
+        dir_name: CovTrace 执行引擎与引导层
+        title: CovTrace 执行引擎与引导层
+        scope:
+            - bootstrap.py
+            - directories.py
+            - engine.py
+            - registry.py
+            - .gitignore
+        source_files: []
+        children: []
+        depends_on: []
+        related_to: []

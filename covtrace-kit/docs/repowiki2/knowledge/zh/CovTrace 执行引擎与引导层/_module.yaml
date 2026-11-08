@@ -1,0 +1,46 @@
+schema_version: 1
+module_path: root
+title: CovTrace 执行引擎与引导层
+scope:
+    - bootstrap.py
+    - directories.py
+    - engine.py
+    - registry.py
+    - .gitignore
+source_files: []
+depends_on: []
+related_to: []
+kk_module_id: 939899b6-c3cc-41ea-b51a-a991a5888a82
+kk_cards:
+    architecture_design:
+        id: fe736b2c-b5c3-4d53-a1ec-5308cf6f2cc5
+        title: CovTrace 执行引擎与引导层
+    coding_conventions:
+        id: 554adb82-b2ec-433a-b5c5-81e93cfce29c
+        title: CovTrace 执行引擎与引导层
+    overview:
+        id: 18699ffe-49d2-4288-95f1-f42943c6d165
+        title: CovTrace 执行引擎与引导层
+    tech_stack:
+        id: 7940b56b-cda5-4b5e-85e8-5ad343e38063
+        title: CovTrace 执行引擎与引导层
+    unique_setup_and_commands:
+        id: 3519c490-0598-4eac-816e-20a20921c148
+        title: CovTrace 执行引擎与引导层
+    configuration_system:
+        id: 70a04b94-30bc-48ec-afc3-8bf778e73bf1
+        title: CovTrace 配置系统：TARGET 字面量、CLI 参数与硬编码路径的三层加载
+    dependency_management:
+        id: 5612e6b4-ee78-418d-9e63-05c802a8a624
+        title: 依赖管理：纯 Python 脚本，无第三方依赖声明文件
+    error_handling:
+        id: 78b908ac-2faf-4fe2-9cfe-f6041a743b4e
+        title: 错误处理：TargetError 与 RuntimeError 的混合模式
+    logging_system:
+        id: 630b96d5-0563-4c67-8041-4999de76efa9
+        title: 基于内置 print/stderr 的原始日志输出
+kk_repo_cards:
+    - configuration_system
+    - dependency_management
+    - error_handling
+    - logging_system

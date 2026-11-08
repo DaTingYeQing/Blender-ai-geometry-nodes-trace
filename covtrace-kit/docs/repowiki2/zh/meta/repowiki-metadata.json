@@ -1,0 +1,1413 @@
+{
+  "wiki_repo": {
+    "id": "93e55e64-e59a-8728-dd24-3a250e448ce7",
+    "name": "CovTrace",
+    "progress_status": "completed",
+    "wiki_present_status": "COMPLETED",
+    "recovery_checkpoint": "wiki_generation_completed",
+    "last_commit_id": "2b8fb0d2817d97c6847a39fb8b30ee9343e2ba32",
+    "last_commit_update": "2026-11-07T12:10:15Z",
+    "gmt_create": "2026-11-07T12:10:15Z",
+    "gmt_modified": "2026-11-07T12:10:15Z",
+    "extend_info": "{\"language\":\"zh\",\"active\":true,\"branch\":\"master\"}"
+  },
+  "wiki_catalogs": [
+    {
+      "id": "59036cf5-154e-4f20-8eb2-f9d96c04cd7e",
+      "repo_id": "93e55e64-e59a-8728-dd24-3a250e448ce7",
+      "name": "Gate 接口设计与生命周期",
+      "description": "gate-interface-design",
+      "prompt": "创建 Gate 接口设计与生命周期的详细文档。重点说明 gates/base.py 中 GateContext、Gate 抽象类、get_proc 与 missing_exports 的设计意图：为什么 Gate 必须运行在 Blender 进程内，如何通过 ctypes.windll.kernel32.GetModuleHandleA/GetProcAddress 解析 C++ 导出的 covtrace_* 符号；GateContext.path 如何统一 raw 输出路径；missing_exports 如何检测未实现的导出符号。详细说明 Gate 的生命周期：arm(ctx) 在执行用户 evaluate 前调用，dump(ctx) 在评估后按反序调用，以及失败时异常如何向上抛出并由 bootstrap/engine 写入 status.json。解释 Gate.name、Gate.exports 的元数据作用，以及与 registry.py 中 GATES 注册表的关系。给出新增 Gate 的最小步骤：继承 Gate、声明 exports、实现 arm/dump，并在 registry.py 注册。同时说明闸门之间不直接共享状态，只通过 ctx.work_dir 下的原始文件协作，从而与后续 cards 解耦。",
+      "progress_status": "completed",
+      "dependent_files": "gates/base.py,registry.py",
+      "gmt_create": "2026-11-07T12:10:15Z",
+      "gmt_modified": "2026-11-07T12:10:15Z",
+      "parent_id": "ed13130f-ed91-452c-b6ce-9d12c81ea32f",
+      "layer_level": 1,
+      "kk_dependent_files": [
+        "gates/base.py",
+        "registry.py"
+      ]
+    },
+    {
+      "id": "7bcff2be-5a0c-460c-ad31-700af07a13fc",
+      "repo_id": "93e55e64-e59a-8728-dd24-3a250e448ce7",
+      "name": "项目概述",
+      "description": "project-overview",
+      "prompt": "为 CovTrace 项目创建总体概述文档，说明它是一个面向 Blender Geometry Nodes 修改器的性能分析与覆盖率采集工具链。解释核心目标：在 Blender 中加载指定几何节点修改器、执行用户求值脚本、通过闸门采集函数调用边与时序数据、基于 LLVM profraw 生成源码行覆盖率，并以 run key + hash8 组织输出产物。明确适用人群（Blender 开发者、CI 集成者、扩展开发者）与核心术语（Gate、TranslationCard、raw、product、run key、hash8、before/after）。描述宿主引擎与 Blender 底座的分工关系，以及 cards/* 翻译卡片的流水线处理模式。提供简洁的数据流图，并指出它不是普通应用而是专用工程工具（CLI + Python 编排框架），主要产出是 out/<node>/<hash8>/ 下的 JSON/JSONL 文件。",
+      "progress_status": "completed",
+      "dependent_files": "docs/架构.md,engine.py,bootstrap.py,registry.py,directories.py",
+      "gmt_create": "2026-11-07T12:10:15Z",
+      "gmt_modified": "2026-11-07T12:10:15Z",
+      "kk_dependent_files": [
+        "docs/架构.md",
+        "engine.py",
+        "bootstrap.py",
+        "registry.py",
+        "directories.py"
+      ]
+    },
+    {
+      "id": "ae4334b5-8006-4fbf-9711-29f84a27bfa7",
+      "repo_id": "93e55e64-e59a-8728-dd24-3a250e448ce7",
+      "name": "全局路径与工具配置",
+      "description": "global-directories",
+      "prompt": "为 CovTrace 的全局路径与工具配置模块创建详细文档。重点说明 directories.py 中 BLENDER_EXE、LLVM_BIN_DIR、GRAPHVIZ_BIN_DIR、源码根、脚本路径、out/cache/_internal 等常量的含义、默认值、查找策略和平台差异；解释为什么这些外部依赖路径需要集中管理，以及新增工具时应如何扩展该模块。结合 engine.py、bootstrap.py、cards/coverage.py、cards/disasm.py 的使用方式，给出具体代码示例，说明如何在不同运行阶段读取工具路径。补充常见问题：Blender 可执行文件未找到、LLVM bin 不在 PATH、Graphviz dot.exe 缺失时的诊断方法。强调该模块应避免直接耦合 Blender 或 LLVM 的内部版本，仅暴露稳定常量。",
+      "progress_status": "completed",
+      "dependent_files": "directories.py",
+      "gmt_create": "2026-11-07T12:10:15Z",
+      "gmt_modified": "2026-11-07T12:10:15Z",
+      "parent_id": "c367d385-e031-43a5-9e3c-fb90b19da8d7",
+      "layer_level": 1,
+      "kk_dependent_files": [
+        "directories.py"
+      ]
+    },
+    {
+      "id": "dfe8954b-1312-4f3c-91cd-ee6d64c4b2a9",
+      "repo_id": "93e55e64-e59a-8728-dd24-3a250e448ce7",
+      "name": "CLI 子命令：run、validate、translate",
+      "description": "cli-subcommands",
+      "prompt": "详细说明 engine.py 中 CLI 子命令 run、validate、translate 的职责差异与执行流程。解释 run 如何解析参数、计算 run key/hash8、规划工作区、启动 Blender 子进程、收集 raw、执行卡片流水线并原子发布；validate 如何仅校验 eval 与 TARGET，不启动 Blender；translate 如何复用已有 cache/<node>/<hash8>/ 下的 raw 数据重新执行卡片流水线而不重启 Blender。列出每个子命令支持的主要命令行参数（如 --eval、--work、--node、--gates、--blend、--obj、--mod、--param、--phase、--measure-node、--test 等），说明其默认值、校验规则与典型用法。包含错误输出格式、fail() 返回值约定以及调试建议，例如如何通过 --test 暴露内部产物、如何查看 status.json 与 failed-* 现场。",
+      "progress_status": "completed",
+      "dependent_files": "engine.py",
+      "gmt_create": "2026-11-07T12:10:15Z",
+      "gmt_modified": "2026-11-07T12:10:15Z",
+      "parent_id": "57e0e826-7850-4b53-b2af-26ec1a8352fc",
+      "layer_level": 1,
+      "kk_dependent_files": [
+        "engine.py"
+      ]
+    },
+    {
+      "id": "ec2af893-25e0-4c2e-8207-06b602e380aa",
+      "repo_id": "93e55e64-e59a-8728-dd24-3a250e448ce7",
+      "name": "TranslationCard 接口与 CardContext",
+      "description": "translation-card-interface",
+      "prompt": "编写 TranslationCard 抽象接口与 CardContext 的参考文档。详细说明 TranslationCard.build(ctx) 方法签名、返回值约定、异常处理策略，以及 CardContext.raw/out/internal/publish/input/product/test 等属性的用途和生命周期。解释卡片如何消费前序产物（如 edge.json、disasm.json）并生成新产物，说明 needs 依赖模型在 engine.py 中的执行顺序控制方式。给出新增 TranslationCard 的最小实现示例，包括继承基类、声明输入输出路径、注册到 registry.py 的 CARDS 列表。补充常见错误：忘记写 product、误读 internal 路径、未处理缺失前序产物的情况。",
+      "progress_status": "completed",
+      "dependent_files": "cards/base.py,registry.py",
+      "gmt_create": "2026-11-07T12:10:15Z",
+      "gmt_modified": "2026-11-07T12:10:15Z",
+      "parent_id": "ff6501f0-6aeb-4bb8-8f44-cf59941130cd",
+      "layer_level": 1,
+      "kk_dependent_files": [
+        "cards/base.py",
+        "registry.py"
+      ]
+    },
+    {
+      "id": "f1c5d110-0442-46e6-9685-e9cf5d93f282",
+      "repo_id": "93e55e64-e59a-8728-dd24-3a250e448ce7",
+      "name": "Bootstrap 执行流程",
+      "description": "bootstrap-execution-flow",
+      "prompt": "编写 Bootstrap 执行流程的详细文档，聚焦 bootstrap.py 作为 Blender 内实际执行入口的职责。说明其如何解析 CLI 参数、通过 AST 安全加载 TARGET/NODE、打开 blend 文件、定位 object/modifier/node_group/param，并构造 Context（包含 bpy、target、obj、mod、node_tree、param、set_value、instance_count）。详细解释闸门生命周期：先调用各 Gate.arm() 注册采集点，再执行用户 evaluate(ctx)，最后按逆序调用 dump() 写出 raw 数据与 status.json。说明 missing exports 检测、错误堆栈传播、以及 bootstrap 与 gates/base.py 的协作关系。提供从 engine.py 启动到 status.json 落盘的完整时序示例，并给出常见错误（blend 无法打开、目标对象不存在、导出符号缺失）的诊断方法。",
+      "progress_status": "completed",
+      "dependent_files": "bootstrap.py,infra/target.py,gates/base.py",
+      "gmt_create": "2026-11-07T12:10:15Z",
+      "gmt_modified": "2026-11-07T12:10:15Z",
+      "parent_id": "84cd5552-ec85-4018-a247-51b18e639394",
+      "layer_level": 1,
+      "kk_dependent_files": [
+        "bootstrap.py",
+        "infra/target.py",
+        "gates/base.py"
+      ]
+    },
+    {
+      "id": "f5825a20-2551-4db0-94ce-f1508749dfca",
+      "repo_id": "93e55e64-e59a-8728-dd24-3a250e448ce7",
+      "name": "新增 Gate",
+      "description": "extend-gate",
+      "prompt": "编写新增 CovTrace Gate 的详细指南。Gate 在 Blender 子进程内运行，负责采集原始数据并写出 raw 文件；TranslationCard 在宿主侧消费这些 raw。文档应覆盖：\n1. 继承 gates/base.py 的 Gate，实现 name、exports、arm(ctx)、dump(ctx)。\n2. exports 的作用：用于 missing_exports(gate) 检测 Blender 自定义构建是否导出 covtrace_* 符号。\n3. GateContext.work_dir/path(name) 的使用方式，以及 raw 输出路径约定。\n4. arm 与 dump 的生命周期：bootstrap.py 先按 GATES 顺序执行所有 arm()，再反序执行所有 dump()，中间调用 evaluate(ctx)。\n5. 结合 gates/calls.py 或 gates/coverage.py 给出完整示例：定义类、声明 exports、在 arm/dump 中读写 raw 文件。\n6. 在 registry.py 的 GATES 列表末尾追加新 Gate 实例。\n7. 常见错误：Blender 缺少导出符号、raw 文件未写出、arm/dump 抛出异常导致 status.json 记录失败现场。\n8. 性能建议：避免在 arm/dump 中进行重型 I/O，尽量只写二进制或紧凑格式到 work_dir。",
+      "progress_status": "completed",
+      "dependent_files": "gates/base.py,gates/calls.py,gates/coverage.py,registry.py",
+      "gmt_create": "2026-11-07T12:10:15Z",
+      "gmt_modified": "2026-11-07T12:10:15Z",
+      "parent_id": "a987bae7-d7b7-43db-a9bc-0596500b985d",
+      "layer_level": 1,
+      "kk_dependent_files": [
+        "gates/base.py",
+        "gates/calls.py",
+        "gates/coverage.py",
+        "registry.py"
+      ]
+    },
+    {
+      "id": "0bc3d2ed-a4ab-48dd-9aa2-1a459bb92d91",
+      "repo_id": "93e55e64-e59a-8728-dd24-3a250e448ce7",
+      "name": "工作区规划、缓存与失败现场",
+      "description": "workspace-and-cache",
+      "prompt": "详细说明宿主引擎的工作区规划策略：out/<node>/<hash8>/ 作为最终产品目录，cache/<node>/<hash8>/ 作为 raw 与中间状态目录，_internal 目录用于隔离 disasm/timing 等内部产物。解释 _keep_failed(work_dir, hash8, keep) 如何复制 manifest 与 status.json、执行 _rebase 路径重绑定、生成 failed-<hash8>-<timestamp>[-N] 目录、清理旧缓存，并通过 os.replace 原子迁移失败现场。说明 _prune_cache(node_dir, keep) 按修改时间保留最近 DEFAULT_KEEP_CACHE=5 个运行结果。给出典型路径迁移场景，例如从一台机器迁移 out/cache 到另一台机器时，_rebase_path 如何将绝对路径从 src 重映射到 dst。补充常见陷阱，如路径大小写、Windows 盘符、相对路径与 normcase 行为。",
+      "progress_status": "completed",
+      "dependent_files": "engine.py,infra/paths.py",
+      "gmt_create": "2026-11-07T12:10:15Z",
+      "gmt_modified": "2026-11-07T12:10:15Z",
+      "parent_id": "57e0e826-7850-4b53-b2af-26ec1a8352fc",
+      "layer_level": 1,
+      "order": 1,
+      "kk_dependent_files": [
+        "engine.py",
+        "infra/paths.py"
+      ]
+    },
+    {
+      "id": "42911309-6e9d-49ed-9553-5f647805e610",
+      "repo_id": "93e55e64-e59a-8728-dd24-3a250e448ce7",
+      "name": "新增 TranslationCard",
+      "description": "extend-translation-card",
+      "prompt": "编写新增 CovTrace TranslationCard 的详细指南。TranslationCard 在宿主引擎中按固定顺序执行，消费前序产物并生成最终 JSON/JSONL 产品。文档应覆盖：\n1. 继承 cards/base.py 的 TranslationCard，实现 name、needs、build(ctx)。\n2. CardContext.raw(key) 读取 Gates 产出的 raw 文件；raw(key) 找不到文件会抛 RuntimeError。\n3. CardContext.out(key)/internal(key)/publish(key)/input(key) 的区别：out 写公开产物，internal 写 _internal 内部产物，publish 受 --test 控制，input 默认等于 publish。\n4. CardContext.product(key) 如何查找 registry.py PRODUCTS 中的 Product.path 与 internal 标志。\n5. needs 依赖声明方式：engine.py 按 CARDS 顺序执行，卡片通过 needs 引用前序 product key（如 \"edge\"、\"disasm\"）。\n6. 结合 cards/edge.py、cards/metrics.py 或 cards/diff.py 给出完整示例：从 raw 解析数据、生成 JSON/JSONL、写入 out/publish 路径。\n7. 在 registry.py 的 PRODUCTS 中声明 Product(path, internal=bool)，并在 CARDS 中添加 CardRegistration(new_card(), (\"product_key\",))。\n8. internal/public 设计原则：调试/反汇编/时序等中间结果进入 _internal，仅 CI 测试或 --test 时暴露给外部。\n9. 向后兼容建议：新增 product key 时应保留旧键、逐步迁移消费者，避免破坏已有 out/<node>/<hash8>/ 结构。\n10. 常见错误：unregistered product、raw not found、未正确设置 internal 导致测试无法发现产物。",
+      "progress_status": "completed",
+      "dependent_files": "cards/base.py,cards/edge.py,cards/metrics.py,cards/diff.py,registry.py",
+      "gmt_create": "2026-11-07T12:10:15Z",
+      "gmt_modified": "2026-11-07T12:10:15Z",
+      "parent_id": "a987bae7-d7b7-43db-a9bc-0596500b985d",
+      "layer_level": 1,
+      "order": 1,
+      "kk_dependent_files": [
+        "cards/base.py",
+        "cards/edge.py",
+        "cards/metrics.py",
+        "cards/diff.py",
+        "registry.py"
+      ]
+    },
+    {
+      "id": "49348a13-3ce5-4949-92f9-91006a2dfb8a",
+      "repo_id": "93e55e64-e59a-8728-dd24-3a250e448ce7",
+      "name": "评估脚本接口",
+      "description": "eval-script-interface",
+      "prompt": "编写评估脚本接口的详细文档，面向需要编写 eval/*.py 的开发者与 AI。明确说明 TARGET 字段规范：blend（Blend 文件路径）、object（对象名）、modifier（修改器名）、param（参数字典）、node_tree（节点树名），以及可选 NODE 字段用于 before/after 节点边界。解释 infra/target.py 如何使用 ast.literal_eval 安全读取 TARGET/NODE、合并命令行覆盖参数、校验必需字段，并拒绝任意代码执行。定义 evaluate(ctx) 接口：ctx.bpy、ctx.target、ctx.obj、ctx.mod、ctx.node_tree、ctx.param、ctx.set_value、ctx.instance_count 的含义与用法；强调 ctx.set_value 用于设置几何节点输入参数，instance_count 用于控制实例化采样次数。提供 eval/template.py 风格的完整示例，展示如何读取 param、设置 node_tree 输入、触发求值，并说明为什么不要在 evaluate 中直接执行高风险操作。补充最佳实践：TARGET 保持幂等、NODE 仅用于边界对比、避免在评估脚本中写入外部状态。",
+      "progress_status": "completed",
+      "dependent_files": "bootstrap.py,infra/target.py,eval/template.py",
+      "gmt_create": "2026-11-07T12:10:15Z",
+      "gmt_modified": "2026-11-07T12:10:15Z",
+      "parent_id": "84cd5552-ec85-4018-a247-51b18e639394",
+      "layer_level": 1,
+      "order": 1,
+      "kk_dependent_files": [
+        "bootstrap.py",
+        "infra/target.py",
+        "eval/template.py"
+      ]
+    },
+    {
+      "id": "a29c04b7-1c67-4de0-a996-ca45dab4f771",
+      "repo_id": "93e55e64-e59a-8728-dd24-3a250e448ce7",
+      "name": "TARGET 安全解析与校验",
+      "description": "target-parsing",
+      "prompt": "为 TARGET 安全解析模块创建详细文档，聚焦 infra/target.py 如何通过 AST 加载 eval 脚本并提取 TARGET/NODE 字面量。说明为什么不能直接在宿主侧执行用户 eval 脚本，AST 解析如何避免任意代码执行风险；列出 TARGET 必需字段（blend、object、modifier、param、node_tree）和可选 NODE 字段的类型约束、默认行为与错误处理。结合 bootstrap.py 中从 CLI 参数合并覆盖目标的过程，给出典型 eval/template.py 写法及对应 TARGET 结构。说明命令行覆盖参数如何与 eval 中的 TARGET 合并，以及校验失败时返回的错误信息格式。补充常见陷阱：blend 路径不存在、对象/修改器名称不匹配、NODE 边界与 Repeat/Foreach/Simulation 的限制。",
+      "progress_status": "completed",
+      "dependent_files": "infra/target.py,bootstrap.py",
+      "gmt_create": "2026-11-07T12:10:15Z",
+      "gmt_modified": "2026-11-07T12:10:15Z",
+      "parent_id": "c367d385-e031-43a5-9e3c-fb90b19da8d7",
+      "layer_level": 1,
+      "order": 1,
+      "kk_dependent_files": [
+        "infra/target.py",
+        "bootstrap.py"
+      ]
+    },
+    {
+      "id": "b0c5d763-0728-4d18-b8e1-d9279eb8bb4e",
+      "repo_id": "93e55e64-e59a-8728-dd24-3a250e448ce7",
+      "name": "边卡片与反汇编卡片",
+      "description": "edge-disasm-cards",
+      "prompt": "编写边卡片与反汇编卡片的详细文档。说明 edge.py 如何消费 gates/calls.py 输出的 raw 调用边数据，构建 caller/callee 关系并写入 edge.json；说明 disasm.py 如何将函数 RVA 映射为可阅读的反汇编信息，并生成 disasm.json。解释 rva 身份的概念、symbols.py 如何通过 Windows dbghelp 或 PDB 解析符号地址，以及当符号不可用时的降级行为。提供 edge_count、functions.jsonl 中函数项的结构示例，说明与 tests/test_auto_diff.py 的差异对比流程的关系。补充常见问题：缺少 PDB/dbghelp、RVA 无法解析、edge 数量为 0 的诊断步骤。",
+      "progress_status": "completed",
+      "dependent_files": "cards/edge.py,cards/disasm.py,cards/symbols.py",
+      "gmt_create": "2026-11-07T12:10:15Z",
+      "gmt_modified": "2026-11-07T12:10:15Z",
+      "parent_id": "ff6501f0-6aeb-4bb8-8f44-cf59941130cd",
+      "layer_level": 1,
+      "order": 1,
+      "kk_dependent_files": [
+        "cards/edge.py",
+        "cards/disasm.py",
+        "cards/symbols.py"
+      ]
+    },
+    {
+      "id": "edc7bb6a-d2b1-4164-8eb1-340b666fcaf7",
+      "repo_id": "93e55e64-e59a-8728-dd24-3a250e448ce7",
+      "name": "Calls 闸门：函数调用边与时序",
+      "description": "calls-gate",
+      "prompt": "创建 Calls 闸门的详细文档，围绕 gates/calls.py 中的 CallsGate 实现展开。说明其 exports 列表对应 `covtrace_calls_arm`、`covtrace_calls_reset`、`covtrace_calls_disarm`、`covtrace_calls_dump`、`covtrace_calls_dump_edges`、`covtrace_calls_dump_timings`、`covtrace_calls_edge_count`、`covtrace_calls_timing_count` 等 C++ 导出符号，并解释 _fn 辅助函数如何用 ctypes.CFUNCTYPE 包装这些符号。详细描述 arm 阶段：调用 arm() 启用采集，再 reset() 清空上一轮数据；dump 阶段：disarm() 停止采集，依次写出 functions.bin、edges.bin、timings.bin，并通过 edge_count/timing_count 生成 calls.json 摘要。说明 raw 文件中 functions.bin、edges.bin、timings.bin 的职责划分，以及它们如何被后续 edge.py、timing.py、disasm.py 卡片消费。提供错误处理示例：arm 或 dump 失败时抛出 RuntimeError，导致 bootstrap 记录失败状态。补充性能注意事项：避免在 arm/dump 中执行昂贵操作，因为闸门运行在 Blender 主流程中。",
+      "progress_status": "completed",
+      "dependent_files": "gates/calls.py,cards/edge.py,cards/timing.py,cards/disasm.py",
+      "gmt_create": "2026-11-07T12:10:15Z",
+      "gmt_modified": "2026-11-07T12:10:15Z",
+      "parent_id": "ed13130f-ed91-452c-b6ce-9d12c81ea32f",
+      "layer_level": 1,
+      "order": 1,
+      "kk_dependent_files": [
+        "gates/calls.py",
+        "cards/edge.py",
+        "cards/timing.py",
+        "cards/disasm.py"
+      ]
+    },
+    {
+      "id": "fb0614ba-70e8-430c-832f-2dc623a0c0d6",
+      "repo_id": "93e55e64-e59a-8728-dd24-3a250e448ce7",
+      "name": "快速开始",
+      "description": "getting-started",
+      "prompt": "编写 CovTrace 的快速开始指南，帮助新手完成首次运行。首先说明环境准备：需要自定义构建的 Blender（含 covtrace_* 导出符号）、LLVM 工具链（llvm-cov、llvm-profdata）、Graphviz dot，以及 Windows dbghelp；说明这些依赖由 directories.py 中的路径常量管理。然后给出最小示例：编写一个 eval/*.py 脚本，定义 TARGET（blend/object/modifier/param/node_tree）和可选 NODE，实现 evaluate(ctx)；接着运行 python engine.py run --eval eval/template.py，并解释 out/<node>/<hash8>/ 下会生成的 functions.jsonl、edge.json、coverage.json、timing.json、diff.json 等产物。最后提供常见命令（run、validate、translate）与失败现场 cache/<node>/<hash8>.failed-* 的定位方式，确保读者能在 10 分钟内看到结果。",
+      "progress_status": "completed",
+      "dependent_files": "directories.py,eval/template.py,engine.py,bootstrap.py",
+      "gmt_create": "2026-11-07T12:10:15Z",
+      "gmt_modified": "2026-11-07T12:10:15Z",
+      "order": 1,
+      "kk_dependent_files": [
+        "directories.py",
+        "eval/template.py",
+        "engine.py",
+        "bootstrap.py"
+      ]
+    },
+    {
+      "id": "43cc1d4a-9050-437b-89ec-80a4d5538bab",
+      "repo_id": "93e55e64-e59a-8728-dd24-3a250e448ce7",
+      "name": "run manifest 与 run.json",
+      "description": "run-manifest",
+      "prompt": "为 run manifest 与 run.json 管理模块创建详细文档。说明 infra/manifest.py 的 Manifest 数据结构、读写接口和生命周期，包括 new、duplicate、conflict、incomplete 四类状态的判定条件；解释 run.json 如何作为一次运行记录的元数据载体，被 engine.py 在缓存命中、冲突检测和失败现场分析中使用。给出 run.json 的字段定义、示例 JSON，以及当 hash8 已存在、已有结果与当前产物不一致、raw/status.json 不完整时的处理流程。说明 manifest 与 out/<node>/<hash8>/ 产物目录的关系，以及未来扩展新字段时的兼容建议。补充调试技巧：如何手动检查 cache/_internal/run.json，以及如何通过 manifest 判断某次运行是否可复用。",
+      "progress_status": "completed",
+      "dependent_files": "infra/manifest.py,engine.py",
+      "gmt_create": "2026-11-07T12:10:15Z",
+      "gmt_modified": "2026-11-07T12:10:15Z",
+      "parent_id": "c367d385-e031-43a5-9e3c-fb90b19da8d7",
+      "layer_level": 1,
+      "order": 2,
+      "kk_dependent_files": [
+        "infra/manifest.py",
+        "engine.py"
+      ]
+    },
+    {
+      "id": "48ca74c1-48ee-4d96-9329-84fd90401874",
+      "repo_id": "93e55e64-e59a-8728-dd24-3a250e448ce7",
+      "name": "总体架构",
+      "description": "architecture",
+      "prompt": "创建 CovTrace 的总体架构文档，重点说明宿主引擎与 Blender 底座的双进程边界：engine.py 负责 CLI、工作区规划、卡片线程池、原子落盘与失败现场迁移；bootstrap.py 在 Blender 子进程中打开 blend、定位对象/修改器/节点树、注入 ctx、执行 gates 生命周期并写出 status.json。详细解释 Gate 与 TranslationCard 的职责分离——Gate 在 Blender 内采集 raw，TranslationCard 在宿主侧消费 raw 和前序产物生成最终 product。描述 registry.py 的插件式注册表如何统一管理 GATES、CARDS、PRODUCTS 与 CardRegistration。绘制从 eval/*.py → bootstrap → gates arm → evaluate → gates dump → status.json → cards 流水线 → out/<node>/<hash8>/ 的完整数据流图，并说明 before/after 对比、run key/hash8 缓存、_internal 与公开产物的设计取舍。",
+      "progress_status": "completed",
+      "dependent_files": "engine.py,bootstrap.py,registry.py,gates/base.py,cards/base.py,docs/架构.md",
+      "gmt_create": "2026-11-07T12:10:15Z",
+      "gmt_modified": "2026-11-07T12:10:15Z",
+      "order": 2,
+      "kk_dependent_files": [
+        "engine.py",
+        "bootstrap.py",
+        "registry.py",
+        "gates/base.py",
+        "cards/base.py",
+        "docs/架构.md"
+      ]
+    },
+    {
+      "id": "50527f0a-2dc6-4e90-ab82-09ee862b34b5",
+      "repo_id": "93e55e64-e59a-8728-dd24-3a250e448ce7",
+      "name": "Coverage 闸门：源码行覆盖率原始数据",
+      "description": "coverage-gate",
+      "prompt": "创建 Coverage 闸门的详细文档，围绕 gates/coverage.py 中的 CoverageGate 实现展开。说明其 exports 列表仅包含 `covtrace_arm` 与 `covtrace_dump`，并与 LLVM profraw 工具链配合完成源码行覆盖率采集。详细描述 arm 阶段：从 ctx.path(\"window.profraw\") 构造 ASCII 路径，调用 covtrace_arm(raw_path) 启动覆盖率窗口；如果路径包含非 ASCII 字符则抛出 RuntimeError。描述 dump 阶段：调用 covtrace_dump(b\"NUL\") 关闭覆盖率窗口并写入 window.profraw，然后通过 coverage_raw.json 暴露 raw 路径。解释返回的 summary 结构及其与 cards/coverage.py 中 llvm-cov / llvm-profdata 处理流程的关系。说明 coverage gate 与 calls gate 的区别：coverage 关注源码行命中，calls 关注函数 RVA 与调用边。补充常见问题排查：LLVM 工具链不可用、profraw 为空、工作目录路径非 ASCII、covtrace_dump 返回值非 0 时的诊断方式。",
+      "progress_status": "completed",
+      "dependent_files": "gates/coverage.py,cards/coverage.py,directories.py",
+      "gmt_create": "2026-11-07T12:10:15Z",
+      "gmt_modified": "2026-11-07T12:10:15Z",
+      "parent_id": "ed13130f-ed91-452c-b6ce-9d12c81ea32f",
+      "layer_level": 1,
+      "order": 2,
+      "kk_dependent_files": [
+        "gates/coverage.py",
+        "cards/coverage.py",
+        "directories.py"
+      ]
+    },
+    {
+      "id": "a6e5eb05-41c9-43eb-a661-8dec977d59d1",
+      "repo_id": "93e55e64-e59a-8728-dd24-3a250e448ce7",
+      "name": "覆盖率卡片与时序卡片",
+      "description": "coverage-timing-cards",
+      "prompt": "编写覆盖率卡片与时序卡片的完整文档。说明 coverage.py 如何消费 LLVM profraw 原始数据，解析 source/intern 模块的行覆盖率，并生成 coverage.json；解释 timing.py 如何消费 gates/coverage.py 采集的时序 raw，累计每个函数或边的耗时，生成 timing.json。描述 LLVM 工具链（llvm-cov、llvm-profdata）在卡片执行中的作用，以及当 profraw 缺失、时间戳不一致、源文件路径变化时的处理策略。说明 coverage.json、timing.json 与 functions.jsonl、diff.json 的消费关系，给出面向测试回归的典型字段示例。补充故障排查：LLVM_BIN_DIR 配置错误、profraw 为空、覆盖率结果为空、耗时统计不准确的原因与修复方法。",
+      "progress_status": "completed",
+      "dependent_files": "cards/coverage.py,cards/timing.py,gates/coverage.py",
+      "gmt_create": "2026-11-07T12:10:15Z",
+      "gmt_modified": "2026-11-07T12:10:15Z",
+      "parent_id": "ff6501f0-6aeb-4bb8-8f44-cf59941130cd",
+      "layer_level": 1,
+      "order": 2,
+      "kk_dependent_files": [
+        "cards/coverage.py",
+        "cards/timing.py",
+        "gates/coverage.py"
+      ]
+    },
+    {
+      "id": "e6cdccb1-0314-4d97-baba-a8847c326867",
+      "repo_id": "93e55e64-e59a-8728-dd24-3a250e448ce7",
+      "name": "run key 与 hash8 标识体系",
+      "description": "run-key-and-hash8",
+      "prompt": "详细解释 run key 与 hash8 的设计目标：保证同一组 eval 内容、node、Blender 构建、PDB、可选 target 与 options 可复现地命中缓存。说明 run_key(eval_path, node, blender, pdb, target=None, options=None) 如何拼接 RUN_KEY_VERSION、eval 文件 SHA256、node、build_fingerprint(blender, pdb)、target 与 options 的 JSON。解释 build_fingerprint 依赖 paths.file_fingerprint，从而将 Blender 与 PDB 的二进制变更纳入哈希。说明 short(key) 生成的 hash8 如何用于目录命名与 manifest.hash8 字段。结合 engine.py 的使用位置，说明当 run key 相同但节点或评估脚本变化时会发生什么，以及如何通过 hash8 定位具体一次运行。提供诊断思路：当期望复用缓存却未命中时，应检查 eval 内容、TARGET、blender.exe、pdb 是否发生变化。",
+      "progress_status": "completed",
+      "dependent_files": "infra/runkey.py,engine.py",
+      "gmt_create": "2026-11-07T12:10:15Z",
+      "gmt_modified": "2026-11-07T12:10:15Z",
+      "parent_id": "57e0e826-7850-4b53-b2af-26ec1a8352fc",
+      "layer_level": 1,
+      "order": 2,
+      "kk_dependent_files": [
+        "infra/runkey.py",
+        "engine.py"
+      ]
+    },
+    {
+      "id": "15a8ac65-6797-4183-ad37-29d0cd779c24",
+      "repo_id": "93e55e64-e59a-8728-dd24-3a250e448ce7",
+      "name": "指标汇总、筛选与差异卡片",
+      "description": "metrics-filter-diff-cards",
+      "prompt": "编写指标汇总、筛选与差异卡片的详细文档。说明 metrics.py 如何聚合前序产物生成 functions.jsonl，作为 CI 与测试流程的主要消费入口；说明 filter.py 如何基于 functions.jsonl 或其他指标做出筛选决策并输出 filter.json；说明 diff.py 如何对比 before/after 两次运行的函数集与调用边，生成 diff.json，并处理基线缺失、重复 hash8、节点边界不匹配等情况。重点解释 run manifest 中 new/duplicate/conflict/incomplete 分类与 diff 结果的关联，以及 NODE 参数对 before/after 定位的影响。提供面向自动化测试的 diff.json 判定示例，说明哪些差异应视为回归、哪些可忽略。补充常见问题：manifest 状态错误、before/after 运行结果不完整、diff 为空但实际存在差异的诊断方法。",
+      "progress_status": "completed",
+      "dependent_files": "cards/metrics.py,cards/filter.py,cards/diff.py,.gitignore",
+      "gmt_create": "2026-11-07T12:10:15Z",
+      "gmt_modified": "2026-11-07T12:10:15Z",
+      "parent_id": "ff6501f0-6aeb-4bb8-8f44-cf59941130cd",
+      "layer_level": 1,
+      "order": 3,
+      "kk_dependent_files": [
+        "cards/metrics.py",
+        "cards/filter.py",
+        "cards/diff.py",
+        ".gitignore"
+      ]
+    },
+    {
+      "id": "305ce342-3ca6-401a-ba93-8e72fbfea617",
+      "repo_id": "93e55e64-e59a-8728-dd24-3a250e448ce7",
+      "name": "run manifest 分类 new/duplicate/conflict/incomplete",
+      "description": "manifest-classification",
+      "prompt": "详细说明 infra/manifest.py 中 manifest_path、load、write、classify、base 的作用，并结合 engine.py 说明 classify(run_dir, key) 返回 new/duplicate/conflict/incomplete 的判断规则。解释 new：目录不存在；incomplete：目录存在但缺少 run.json；duplicate：run_key 与当前运行一致；conflict：run_key 不同但目录已存在。说明 base() 构造的结构化基线对象，包括 schema、run_key、hash8、node、eval、blend、blender、pdb、options、created、gates、cards、counts 字段及其用途。强调 write 使用 .tmp + os.replace 的原子写入模式。给出 CI 场景中如何利用 manifest 判断是否跳过重复运行、如何报告冲突，以及如何通过 base 扩展新的元数据字段并保持向后兼容。",
+      "progress_status": "completed",
+      "dependent_files": "infra/manifest.py,engine.py",
+      "gmt_create": "2026-11-07T12:10:15Z",
+      "gmt_modified": "2026-11-07T12:10:15Z",
+      "parent_id": "57e0e826-7850-4b53-b2af-26ec1a8352fc",
+      "layer_level": 1,
+      "order": 3,
+      "kk_dependent_files": [
+        "infra/manifest.py",
+        "engine.py"
+      ]
+    },
+    {
+      "id": "57e0e826-7850-4b53-b2af-26ec1a8352fc",
+      "repo_id": "93e55e64-e59a-8728-dd24-3a250e448ce7",
+      "name": "宿主引擎",
+      "description": "host-engine",
+      "prompt": "详细说明宿主引擎 engine.py 的实现与使用方式。解释 CLI 子命令 run、validate、translate 的职责差异：run 启动 Blender 子进程、收集 raw、执行卡片流水线并原子发布；validate 仅校验 eval 与 TARGET；translate 复用已有 raw 重新跑卡片。描述工作区规划、out/cache/_internal 隔离、失败现场迁移 _keep_failed、_rebase 路径重绑定、以及以 run key 和 hash8 为粒度的缓存机制。说明 manifest 的分类 new/duplicate/conflict/incomplete 如何影响运行行为，并解释卡片线程池执行顺序、needs 依赖与内部/公开产物分离策略。包含典型命令行参数、错误码处理和调试建议。",
+      "progress_status": "completed",
+      "dependent_files": "engine.py,infra/manifest.py,infra/runkey.py,infra/blender.py",
+      "gmt_create": "2026-11-07T12:10:15Z",
+      "gmt_modified": "2026-11-07T12:10:15Z",
+      "order": 3,
+      "kk_dependent_files": [
+        "engine.py",
+        "infra/manifest.py",
+        "infra/runkey.py",
+        "infra/blender.py"
+      ]
+    },
+    {
+      "id": "8bc9801c-f12f-479d-8492-933401d9adff",
+      "repo_id": "93e55e64-e59a-8728-dd24-3a250e448ce7",
+      "name": "run key 与 hash8 计算",
+      "description": "run-key-hash",
+      "prompt": "为 run key 与 hash8 计算模块创建详细文档，聚焦 infra/runkey.py 如何根据 eval 脚本内容、TARGET、构建指纹等输入生成稳定的 run key 与 hash8。解释 hash8 的作用：作为 out/<node>/<hash8>/ 与 cache/<node>/<hash8>.failed-* 的路由键，保证同一组求值脚本和目标可复现、可增量复用。说明哪些输入会影响哈希稳定性，哪些不应纳入（如临时路径、随机时间戳），并给出哈希碰撞、缓存失效、eval 重构后重新采集的处理策略。结合 engine.py 的缓存命中逻辑与 registry.py 对产物粒度的约定，展示一个从 eval + TARGET 到最终输出目录的完整示例。补充性能考虑：哈希计算应轻量，避免每次运行都重复扫描大型二进制文件。",
+      "progress_status": "completed",
+      "dependent_files": "infra/runkey.py,engine.py,registry.py",
+      "gmt_create": "2026-11-07T12:10:15Z",
+      "gmt_modified": "2026-11-07T12:10:15Z",
+      "parent_id": "c367d385-e031-43a5-9e3c-fb90b19da8d7",
+      "layer_level": 1,
+      "order": 3,
+      "kk_dependent_files": [
+        "infra/runkey.py",
+        "engine.py",
+        "registry.py"
+      ]
+    },
+    {
+      "id": "59005319-6909-402a-b402-8b3b77de7d2a",
+      "repo_id": "93e55e64-e59a-8728-dd24-3a250e448ce7",
+      "name": "Blender 子进程封装",
+      "description": "blender-subprocess",
+      "prompt": "为 Blender 子进程封装模块创建详细文档，说明 infra/blender.py 如何组装 blender 命令行参数、启动子进程、传递评估脚本路径与上下文参数，并处理退出码与标准输出/错误流。解释为什么 Blender 必须作为独立子进程运行，而不是直接 import bpy；说明引擎侧与 bootstrap.py 之间的 IPC 契约，包括 status.json 的作用。给出典型调用链：engine.py 启动子进程 → bootstrap.py 解析 CLI → 定位 blend/object/modifier/node_tree → 执行 evaluate(ctx) → 写出 status.json。补充故障排查：Blender 崩溃、导出符号缺失、PYTHONPATH 不正确、自定义 Blender 构建不可用时如何诊断；说明如何增加新的命令行参数并保持向后兼容。",
+      "progress_status": "completed",
+      "dependent_files": "infra/blender.py,engine.py,bootstrap.py",
+      "gmt_create": "2026-11-07T12:10:15Z",
+      "gmt_modified": "2026-11-07T12:10:15Z",
+      "parent_id": "c367d385-e031-43a5-9e3c-fb90b19da8d7",
+      "layer_level": 1,
+      "order": 4,
+      "kk_dependent_files": [
+        "infra/blender.py",
+        "engine.py",
+        "bootstrap.py"
+      ]
+    },
+    {
+      "id": "84cd5552-ec85-4018-a247-51b18e639394",
+      "repo_id": "93e55e64-e59a-8728-dd24-3a250e448ce7",
+      "name": "Blender 底座与评估脚本接口",
+      "description": "blender-bootstrap",
+      "prompt": "编写 Blender 底座 bootstrap.py 与评估脚本接口的详细文档。说明 bootstrap.py 如何解析 CLI 参数、通过 AST 安全加载 TARGET/NODE、打开 blend、定位 object/modifier/node_group、构造 Context，并在闸门 arm → evaluate(ctx) → dump 的生命周期中调度数据采集。详细解释 infra/target.py 如何使用 ast.literal_eval 读取 TARGET 与 NODE，合并命令行覆盖参数，并校验必需字段。定义评估脚本接口：TARGET 字段规范（blend/object/modifier/param/node_tree）、NODE 边界约定、ctx.set_value 与 instance_count 用法，以及 evaluate(ctx) 的最佳实践。提供 eval/template.py 风格的示例，并说明 status.json 的结构与错误传播方式。",
+      "progress_status": "completed",
+      "dependent_files": "bootstrap.py,infra/target.py,gates/base.py",
+      "gmt_create": "2026-11-07T12:10:15Z",
+      "gmt_modified": "2026-11-07T12:10:15Z",
+      "order": 4,
+      "kk_dependent_files": [
+        "bootstrap.py",
+        "infra/target.py",
+        "gates/base.py"
+      ]
+    },
+    {
+      "id": "8e308224-ae1e-42ba-a2d3-fecffe81d01a",
+      "repo_id": "93e55e64-e59a-8728-dd24-3a250e448ce7",
+      "name": "卡片流水线执行与产物管理",
+      "description": "card-pipeline-execution",
+      "prompt": "编写卡片流水线执行与产物管理的架构文档。说明 engine.py 中卡片线程池的执行流程：按 registry.CARDS 固定顺序调度、读取 input/raw、跳过已存在的 product、原子写入 .tmp 后重命名。解释 directories.py 中 out/cache/_internal 的路径规则，说明为什么 disasm、timing 等内部产物默认进入 _internal，以及 --test 标志如何改变公开产物策略。说明 registry.py 中 CardRegistration、PRODUCTS、CARDS 的定义规范，强调新增卡片时必须同步更新注册表。补充性能注意事项：避免在 build 中启动重型外部进程、尽量复用已加载数据、正确处理并发线程下的文件竞争。提供扩展新卡片的完整 checklist。",
+      "progress_status": "completed",
+      "dependent_files": "engine.py,registry.py,directories.py",
+      "gmt_create": "2026-11-07T12:10:15Z",
+      "gmt_modified": "2026-11-07T12:10:15Z",
+      "parent_id": "ff6501f0-6aeb-4bb8-8f44-cf59941130cd",
+      "layer_level": 1,
+      "order": 4,
+      "kk_dependent_files": [
+        "engine.py",
+        "registry.py",
+        "directories.py"
+      ]
+    },
+    {
+      "id": "99073f17-38ff-4ede-b2d5-73e6c1cde26d",
+      "repo_id": "93e55e64-e59a-8728-dd24-3a250e448ce7",
+      "name": "Blender 子进程启动器",
+      "description": "blender-process-launcher",
+      "prompt": "详细说明 infra/blender.py 中 command(blender, eval_path, work_dir, node, blend, obj, mod, param, gates, phase, measure_node) 如何组装 Blender 命令行：--background、--python directories.BOOTSTRAP_SCRIPT，以及 --eval、--work、--node、--gates、--blend、--obj、--mod、--param、--phase、--measure-node 等参数的传递规则。解释 run(cmd, env=None) 如何使用 subprocess.run 启动子进程，并以 text=True、utf-8 编码、errors=\"replace\" 处理输出。说明该模块是纯编排层，不负责解析 Blender 内部状态；实际解析由 bootstrap.py 完成。列举典型调用方式，例如在 engine.py 中如何根据 evaluate 阶段选择是否传入 --phase 或 --measure-node。补充常见问题排查方法，包括如何打印完整命令、如何确认 Blender 可执行路径、如何处理 Windows 下 PATH 与引号问题，以及如何区分 Blender 启动失败与求值失败。",
+      "progress_status": "completed",
+      "dependent_files": "infra/blender.py,engine.py",
+      "gmt_create": "2026-11-07T12:10:15Z",
+      "gmt_modified": "2026-11-07T12:10:15Z",
+      "parent_id": "57e0e826-7850-4b53-b2af-26ec1a8352fc",
+      "layer_level": 1,
+      "order": 4,
+      "kk_dependent_files": [
+        "infra/blender.py",
+        "engine.py"
+      ]
+    },
+    {
+      "id": "7653709b-b7b8-4606-84e5-6dec97f48a47",
+      "repo_id": "93e55e64-e59a-8728-dd24-3a250e448ce7",
+      "name": "路径规范化与安全文件名工具",
+      "description": "path-utils",
+      "prompt": "为路径规范化与安全文件名工具创建详细文档，说明 infra/paths.py 提供的路径拼接、绝对化、去重、安全文件名生成等辅助函数。解释为什么 node 名、hash8、blend 路径、产物名都需要经过统一处理，以避免 Windows 非法字符、路径穿越、重复后缀等问题。结合 engine.py 的工作区规划、directories.py 的输出目录结构和 cards 的产物落盘逻辑，给出具体使用示例，例如将 node 名转换为安全文件名、构造 out/<node>/<hash8>/ 路径。补充平台差异注意事项，尤其是 Windows 与 POSIX 路径分隔符、大小写敏感性、长路径限制；说明如果后续要支持 Linux/macOS 上的 Blender，应在该模块而非上层业务中做适配。",
+      "progress_status": "completed",
+      "dependent_files": "infra/paths.py,engine.py,directories.py",
+      "gmt_create": "2026-11-07T12:10:15Z",
+      "gmt_modified": "2026-11-07T12:10:15Z",
+      "parent_id": "c367d385-e031-43a5-9e3c-fb90b19da8d7",
+      "layer_level": 1,
+      "order": 5,
+      "kk_dependent_files": [
+        "infra/paths.py",
+        "engine.py",
+        "directories.py"
+      ]
+    },
+    {
+      "id": "c367d385-e031-43a5-9e3c-fb90b19da8d7",
+      "repo_id": "93e55e64-e59a-8728-dd24-3a250e448ce7",
+      "name": "基础设施层",
+      "description": "infrastructure",
+      "prompt": "整理 CovTrace 基础设施层的公共能力，包括全局路径与工具配置、TARGET 安全解析、run manifest 管理、run key/hash8 计算、Blender 子进程封装和路径规范化。说明 directories.py 中 BLENDER_EXE、LLVM_BIN_DIR、GRAPHVIZ_BIN_DIR、源码根、脚本路径、out/cache/_internal 等常量的作用；解释 infra/target.py 的 AST 安全解析逻辑；说明 infra/manifest.py 如何读写 run.json 并对 new/duplicate/conflict/incomplete 分类；说明 infra/runkey.py 如何根据 eval/TARGET 生成稳定哈希与 hash8；说明 infra/blender.py 如何组装 blender 命令行、启动子进程、处理退出码；说明 infra/paths.py 的路径规范化与安全文件名生成。强调这些模块被 engine、bootstrap、cards 共同复用，应避免直接耦合外部工具版本。",
+      "progress_status": "completed",
+      "dependent_files": "directories.py,infra/target.py,infra/manifest.py,infra/runkey.py,infra/blender.py,infra/paths.py",
+      "gmt_create": "2026-11-07T12:10:15Z",
+      "gmt_modified": "2026-11-07T12:10:15Z",
+      "order": 5,
+      "kk_dependent_files": [
+        "directories.py",
+        "infra/target.py",
+        "infra/manifest.py",
+        "infra/runkey.py",
+        "infra/blender.py",
+        "infra/paths.py"
+      ]
+    },
+    {
+      "id": "f1e42fa9-b40e-4357-bfdc-5a89273fc7c8",
+      "repo_id": "93e55e64-e59a-8728-dd24-3a250e448ce7",
+      "name": "卡片流水线与线程池执行",
+      "description": "card-pipeline-and-threading",
+      "prompt": "详细说明 engine._run_cards(ctx, data) 如何消费 registry.CARDS 并按固定顺序执行 TranslationCard。解释 available_raw、products、public_products、summaries 四个状态变量的作用，以及 needs 依赖校验逻辑 _missing_needs：raw:xxx 对应 ctx.raw_paths，其他键对应 products。说明 coverage 卡片被特殊处理为 ThreadPoolExecutor(max_workers=1) 中单独提交，以允许其他卡片与其并行，但最终仍等待其结果。解释 _accept_card 如何校验注册产物是否存在、记录 output/extra_outputs/public、并把非 internal 或 ctx.test=True 时的产物加入公开集合。说明 _finalize_out 之后 cards 摘要与 products 如何写入最终 data。补充性能考虑：为什么 max_workers=1、coverage 卡片的独立提交时机，以及新增卡片时如何正确声明 needs 与 internal 属性以避免流水线阻塞或产物不可见。",
+      "progress_status": "completed",
+      "dependent_files": "engine.py,registry.py,cards/base.py",
+      "gmt_create": "2026-11-07T12:10:15Z",
+      "gmt_modified": "2026-11-07T12:10:15Z",
+      "parent_id": "57e0e826-7850-4b53-b2af-26ec1a8352fc",
+      "layer_level": 1,
+      "order": 5,
+      "kk_dependent_files": [
+        "engine.py",
+        "registry.py",
+        "cards/base.py"
+      ]
+    },
+    {
+      "id": "ed13130f-ed91-452c-b6ce-9d12c81ea32f",
+      "repo_id": "93e55e64-e59a-8728-dd24-3a250e448ce7",
+      "name": "数据采集闸门",
+      "description": "data-collection-gates",
+      "prompt": "创建数据采集闸门 Gate 体系的详细文档。说明 gates/base.py 中 GateContext、Gate 抽象类、get_proc 与 missing_exports 的设计目的，解释为什么 Gate 必须在 Blender 进程内运行并通过 ctypes 访问 covtrace_* 导出符号。详细描述 calls 闸门如何记录函数 RVA 与 caller/callee 调用边，coverage 闸门如何配合 LLVM profraw 生成源码行覆盖率原始数据，并说明缺失导出符号时的诊断信息。给出新增 Gate 的扩展步骤：继承 Gate、实现 arm/dump、在 registry.py 注册到 GATES。同时说明 raw 数据的生命周期、错误传播到 status.json 的方式，以及与后续 cards 的解耦关系。",
+      "progress_status": "completed",
+      "dependent_files": "gates/base.py,gates/calls.py,gates/coverage.py",
+      "gmt_create": "2026-11-07T12:10:15Z",
+      "gmt_modified": "2026-11-07T12:10:15Z",
+      "order": 6,
+      "kk_dependent_files": [
+        "gates/base.py",
+        "gates/calls.py",
+        "gates/coverage.py"
+      ]
+    },
+    {
+      "id": "ff6501f0-6aeb-4bb8-8f44-cf59941130cd",
+      "repo_id": "93e55e64-e59a-8728-dd24-3a250e448ce7",
+      "name": "翻译卡片流水线",
+      "description": "translation-card-pipeline",
+      "prompt": "编写翻译卡片流水线的完整文档，说明 cards/base.py 中 CardContext 与 TranslationCard 抽象接口如何消费 raw 与前序产物，生成 edge.json、disasm.json、coverage.json、timing.json、functions.jsonl、filter.json、diff.json 等最终产品。解释卡片固定执行顺序、needs 依赖模型、内部产物（默认进入 _internal）与公开产物的区别，以及 registry.py 中 CARDS、PRODUCTS、CardRegistration 的注册方式。重点说明各卡片职责：edge 生成调用边、disasm 生成反汇编与 rva 身份、coverage 处理 LLVM profraw、timing 累计耗时、metrics 聚合 functions.jsonl、filter 做筛选决策、diff 做 before/after 对比。说明扩展新卡片的标准流程和向后兼容注意事项。",
+      "progress_status": "completed",
+      "dependent_files": "cards/base.py,cards/edge.py,cards/disasm.py,cards/coverage.py,cards/timing.py,cards/metrics.py,cards/filter.py,cards/diff.py,cards/symbols.py,registry.py",
+      "gmt_create": "2026-11-07T12:10:15Z",
+      "gmt_modified": "2026-11-07T12:10:15Z",
+      "order": 7,
+      "kk_dependent_files": [
+        "cards/base.py",
+        "cards/edge.py",
+        "cards/disasm.py",
+        "cards/coverage.py",
+        "cards/timing.py",
+        "cards/metrics.py",
+        "cards/filter.py",
+        "cards/diff.py",
+        "cards/symbols.py",
+        "registry.py"
+      ]
+    },
+    {
+      "id": "ad0b8b0f-0094-4285-90eb-05d60ca51452",
+      "repo_id": "93e55e64-e59a-8728-dd24-3a250e448ce7",
+      "name": "节点边界检测",
+      "description": "node-boundary-detection",
+      "prompt": "详细说明节点边界检测功能，用于 before/after 区域校验与重新连线。解释 frag/backend.py 与 frag/targeting.py 如何协作：targeting 负责 before/after 区域的节点选择与 resolve，backend 负责校验区域合法性并执行重新连线。说明 NODE 字段的语义、Repeat/Foreach/Simulation 等受限节点类型的限制原因，以及如何在 bootstrap.py 中触发该流程。提供 before/after 区域校验失败的常见原因与修复方法，例如节点名不匹配、拓扑不合法、或目标不在期望的几何节点修改器分支上。同时说明该功能与 diff.json、functions.jsonl 的关系，以及它如何支撑 CI 中的节点级回归判定。",
+      "progress_status": "completed",
+      "dependent_files": "frag/backend.py,frag/targeting.py,bootstrap.py",
+      "gmt_create": "2026-11-07T12:10:15Z",
+      "gmt_modified": "2026-11-07T12:10:15Z",
+      "order": 8,
+      "kk_dependent_files": [
+        "frag/backend.py",
+        "frag/targeting.py",
+        "bootstrap.py"
+      ]
+    },
+    {
+      "id": "4dcf418c-3a73-4b2b-a7e3-b6d14a37e977",
+      "repo_id": "93e55e64-e59a-8728-dd24-3a250e448ce7",
+      "name": "工具与可视化",
+      "description": "tools-and-visualization",
+      "prompt": "编写 tools/dot_graph.py 与 tools/svg_viewer.py 的使用文档。说明当前这两个工具尚未完全整合进主流程，主要用于辅助查看调用边、反汇编或节点结构。解释 dot_graph 如何读取卡片或中间产物生成 Graphviz dot 图，svg_viewer 如何展示 SVG 可视化结果。提供命令行示例，说明输入产物路径、输出目录与常见参数。说明它们与 cards/edge.py、cards/disasm.py 的潜在关联，以及未来如何将可视化后端接入主运行流程的建议。同时指出当前局限性：依赖 Graphviz、对大型图的渲染性能问题、以及跨平台兼容性注意事项。",
+      "progress_status": "completed",
+      "dependent_files": "tools/dot_graph.py,tools/svg_viewer.py",
+      "gmt_create": "2026-11-07T12:10:15Z",
+      "gmt_modified": "2026-11-07T12:10:15Z",
+      "order": 9,
+      "kk_dependent_files": [
+        "tools/dot_graph.py",
+        "tools/svg_viewer.py"
+      ]
+    },
+    {
+      "id": "8e322537-c629-4bc4-9930-47469f41c825",
+      "repo_id": "93e55e64-e59a-8728-dd24-3a250e448ce7",
+      "name": "测试与质量保障",
+      "description": "testing-and-quality",
+      "prompt": "整理 CovTrace 的测试与质量保障文档。说明现有测试用例的范围：test_registry.py 用于验证注册表声明的正确性，test_auto_diff.py 用于自动化 diff 行为或产物一致性检查。解释如何扩充分支测试，例如为 cards/* 增加单元测试，为 gates/* 增加 mock Blender 上下文测试，为 before/after 节点边界增加 fixture。说明 CI 集成建议：如何消费 functions.jsonl、diff.json、edge.json 做回归判定，如何处理 platform-specific 的 PDB/dbghelp 反汇编差异。提供卡片单元测试模板、断言建议、失败时保留 cache 现场的策略，以及避免直接启动真实 Blender 的测试优化方案。",
+      "progress_status": "completed",
+      "dependent_files": "tests/test_auto_diff.py,tests/test_registry.py",
+      "gmt_create": "2026-11-07T12:10:15Z",
+      "gmt_modified": "2026-11-07T12:10:15Z",
+      "order": 10,
+      "kk_dependent_files": [
+        "tests/test_auto_diff.py",
+        "tests/test_registry.py"
+      ]
+    },
+    {
+      "id": "13eb993f-eaa6-417d-b546-a476c4210125",
+      "repo_id": "93e55e64-e59a-8728-dd24-3a250e448ce7",
+      "name": "部署与运行环境",
+      "description": "deployment-and-environment",
+      "prompt": "编写部署与运行环境文档，聚焦 CovTrace 的外部依赖与平台要求。说明必须使用带 covtrace_* 导出符号的自定义 Blender 构建，LLVM 工具链需安装 llvm-cov 与 llvm-profdata，Graphviz 需提供 dot.exe，Windows 环境需要 dbghelp。解释 directories.py 中路径常量的配置方式，以及如何通过环境变量或配置文件调整 Blender、LLVM、Graphviz 的位置。说明 infra/blender.py 如何组装 blender 命令行、传递参数、处理非零退出码。补充 CI 环境建议：缓存 LLVM 工具链、锁定 Blender 版本、隔离 out 目录、避免共享缓存冲突。最后给出常见问题排查：找不到 blender.exe、llvm-cov 不可用、dot 未安装、PDB 符号缺失等。",
+      "progress_status": "completed",
+      "dependent_files": "directories.py,infra/blender.py,engine.py",
+      "gmt_create": "2026-11-07T12:10:15Z",
+      "gmt_modified": "2026-11-07T12:10:15Z",
+      "order": 11,
+      "kk_dependent_files": [
+        "directories.py",
+        "infra/blender.py",
+        "engine.py"
+      ]
+    },
+    {
+      "id": "f7fe7d3b-39d8-4e51-8519-5462cdc90501",
+      "repo_id": "93e55e64-e59a-8728-dd24-3a250e448ce7",
+      "name": "故障排查",
+      "description": "troubleshooting",
+      "prompt": "创建 CovTrace 的故障排查手册，覆盖最常见的问题与解决路径。包括：status.json 与 traceback 的含义；missing exports 表示 Blender 自定义构建缺少 covtrace_* 符号；functions.bin 为空或 edge_count=0 可能代表闸门未正确 arm 或未执行 evaluate；failed-* 现场恢复方法与 cache 清理策略；路径重绑定 _rebase 失败的原因；LLVM profraw 解析不到 source/intern 模块的问题；before/after 节点校验失败；Windows dbghelp 无法解析反汇编符号等。每个问题提供症状、可能原因、定位文件和修复步骤，并引导读者优先检查 engine.py、bootstrap.py、gates/base.py 与 cards/base.py 的错误日志。",
+      "progress_status": "completed",
+      "dependent_files": "engine.py,bootstrap.py,gates/base.py,cards/base.py",
+      "gmt_create": "2026-11-07T12:10:15Z",
+      "gmt_modified": "2026-11-07T12:10:15Z",
+      "order": 12,
+      "kk_dependent_files": [
+        "engine.py",
+        "bootstrap.py",
+        "gates/base.py",
+        "cards/base.py"
+      ]
+    },
+    {
+      "id": "a987bae7-d7b7-43db-a9bc-0596500b985d",
+      "repo_id": "93e55e64-e59a-8728-dd24-3a250e448ce7",
+      "name": "扩展指南",
+      "description": "extension-guide",
+      "prompt": "编写面向扩展开发者的 CovTrace 扩展指南。详细说明如何新增一个 Gate：继承 gates/base.py 的 Gate，实现 arm/dump，决定 raw 输出位置，并在 registry.py 注册到 GATES。说明如何新增一个 TranslationCard：继承 cards/base.py 的 TranslationCard，实现 build，消费 CardContext.raw/out/internal/input，生成 product 并写入 registry.py 中 PRODUCTS 指定的路径。解释 internal/public 产物设计、CardRegistration 字段含义、needs 依赖声明方式，以及向后兼容与版本化建议。结合 registry.py 的现有 GATES/CARDS/PRODUCTS 列表给出完整示例，说明如何在不修改 engine.py 的前提下扩展 CovTrace 的能力。",
+      "progress_status": "completed",
+      "dependent_files": "registry.py,gates/base.py,cards/base.py,directories.py",
+      "gmt_create": "2026-11-07T12:10:15Z",
+      "gmt_modified": "2026-11-07T12:10:15Z",
+      "order": 13,
+      "kk_dependent_files": [
+        "registry.py",
+        "gates/base.py",
+        "cards/base.py",
+        "directories.py"
+      ]
+    }
+  ],
+  "wiki_items": [
+    {
+      "id": "59036cf5-154e-4f20-8eb2-f9d96c04cd7e",
+      "catalog_id": "59036cf5-154e-4f20-8eb2-f9d96c04cd7e",
+      "title": "Gate 接口设计与生命周期",
+      "description": "gate-interface-design",
+      "extend": "{}",
+      "progress_status": "completed",
+      "repo_id": "93e55e64-e59a-8728-dd24-3a250e448ce7",
+      "reference_count": 0,
+      "gmt_create": "2026-11-07T12:10:15Z",
+      "gmt_modified": "2026-11-07T12:10:15Z"
+    },
+    {
+      "id": "7bcff2be-5a0c-460c-ad31-700af07a13fc",
+      "catalog_id": "7bcff2be-5a0c-460c-ad31-700af07a13fc",
+      "title": "项目概述",
+      "description": "project-overview",
+      "extend": "{}",
+      "progress_status": "completed",
+      "repo_id": "93e55e64-e59a-8728-dd24-3a250e448ce7",
+      "reference_count": 0,
+      "gmt_create": "2026-11-07T12:10:15Z",
+      "gmt_modified": "2026-11-07T12:10:15Z"
+    },
+    {
+      "id": "ae4334b5-8006-4fbf-9711-29f84a27bfa7",
+      "catalog_id": "ae4334b5-8006-4fbf-9711-29f84a27bfa7",
+      "title": "全局路径与工具配置",
+      "description": "global-directories",
+      "extend": "{}",
+      "progress_status": "completed",
+      "repo_id": "93e55e64-e59a-8728-dd24-3a250e448ce7",
+      "reference_count": 0,
+      "gmt_create": "2026-11-07T12:10:15Z",
+      "gmt_modified": "2026-11-07T12:10:15Z"
+    },
+    {
+      "id": "dfe8954b-1312-4f3c-91cd-ee6d64c4b2a9",
+      "catalog_id": "dfe8954b-1312-4f3c-91cd-ee6d64c4b2a9",
+      "title": "CLI 子命令：run、validate、translate",
+      "description": "cli-subcommands",
+      "extend": "{}",
+      "progress_status": "completed",
+      "repo_id": "93e55e64-e59a-8728-dd24-3a250e448ce7",
+      "reference_count": 0,
+      "gmt_create": "2026-11-07T12:10:15Z",
+      "gmt_modified": "2026-11-07T12:10:15Z"
+    },
+    {
+      "id": "ec2af893-25e0-4c2e-8207-06b602e380aa",
+      "catalog_id": "ec2af893-25e0-4c2e-8207-06b602e380aa",
+      "title": "TranslationCard 接口与 CardContext",
+      "description": "translation-card-interface",
+      "extend": "{}",
+      "progress_status": "completed",
+      "repo_id": "93e55e64-e59a-8728-dd24-3a250e448ce7",
+      "reference_count": 0,
+      "gmt_create": "2026-11-07T12:10:15Z",
+      "gmt_modified": "2026-11-07T12:10:15Z"
+    },
+    {
+      "id": "f1c5d110-0442-46e6-9685-e9cf5d93f282",
+      "catalog_id": "f1c5d110-0442-46e6-9685-e9cf5d93f282",
+      "title": "Bootstrap 执行流程",
+      "description": "bootstrap-execution-flow",
+      "extend": "{}",
+      "progress_status": "completed",
+      "repo_id": "93e55e64-e59a-8728-dd24-3a250e448ce7",
+      "reference_count": 0,
+      "gmt_create": "2026-11-07T12:10:15Z",
+      "gmt_modified": "2026-11-07T12:10:15Z"
+    },
+    {
+      "id": "f5825a20-2551-4db0-94ce-f1508749dfca",
+      "catalog_id": "f5825a20-2551-4db0-94ce-f1508749dfca",
+      "title": "新增 Gate",
+      "description": "extend-gate",
+      "extend": "{}",
+      "progress_status": "completed",
+      "repo_id": "93e55e64-e59a-8728-dd24-3a250e448ce7",
+      "reference_count": 0,
+      "gmt_create": "2026-11-07T12:10:15Z",
+      "gmt_modified": "2026-11-07T12:10:15Z"
+    },
+    {
+      "id": "0bc3d2ed-a4ab-48dd-9aa2-1a459bb92d91",
+      "catalog_id": "0bc3d2ed-a4ab-48dd-9aa2-1a459bb92d91",
+      "title": "工作区规划、缓存与失败现场",
+      "description": "workspace-and-cache",
+      "extend": "{}",
+      "progress_status": "completed",
+      "repo_id": "93e55e64-e59a-8728-dd24-3a250e448ce7",
+      "reference_count": 0,
+      "gmt_create": "2026-11-07T12:10:15Z",
+      "gmt_modified": "2026-11-07T12:10:15Z"
+    },
+    {
+      "id": "42911309-6e9d-49ed-9553-5f647805e610",
+      "catalog_id": "42911309-6e9d-49ed-9553-5f647805e610",
+      "title": "新增 TranslationCard",
+      "description": "extend-translation-card",
+      "extend": "{}",
+      "progress_status": "completed",
+      "repo_id": "93e55e64-e59a-8728-dd24-3a250e448ce7",
+      "reference_count": 0,
+      "gmt_create": "2026-11-07T12:10:15Z",
+      "gmt_modified": "2026-11-07T12:10:15Z"
+    },
+    {
+      "id": "49348a13-3ce5-4949-92f9-91006a2dfb8a",
+      "catalog_id": "49348a13-3ce5-4949-92f9-91006a2dfb8a",
+      "title": "评估脚本接口",
+      "description": "eval-script-interface",
+      "extend": "{}",
+      "progress_status": "completed",
+      "repo_id": "93e55e64-e59a-8728-dd24-3a250e448ce7",
+      "reference_count": 0,
+      "gmt_create": "2026-11-07T12:10:15Z",
+      "gmt_modified": "2026-11-07T12:10:15Z"
+    },
+    {
+      "id": "a29c04b7-1c67-4de0-a996-ca45dab4f771",
+      "catalog_id": "a29c04b7-1c67-4de0-a996-ca45dab4f771",
+      "title": "TARGET 安全解析与校验",
+      "description": "target-parsing",
+      "extend": "{}",
+      "progress_status": "completed",
+      "repo_id": "93e55e64-e59a-8728-dd24-3a250e448ce7",
+      "reference_count": 0,
+      "gmt_create": "2026-11-07T12:10:15Z",
+      "gmt_modified": "2026-11-07T12:10:15Z"
+    },
+    {
+      "id": "b0c5d763-0728-4d18-b8e1-d9279eb8bb4e",
+      "catalog_id": "b0c5d763-0728-4d18-b8e1-d9279eb8bb4e",
+      "title": "边卡片与反汇编卡片",
+      "description": "edge-disasm-cards",
+      "extend": "{}",
+      "progress_status": "completed",
+      "repo_id": "93e55e64-e59a-8728-dd24-3a250e448ce7",
+      "reference_count": 0,
+      "gmt_create": "2026-11-07T12:10:15Z",
+      "gmt_modified": "2026-11-07T12:10:15Z"
+    },
+    {
+      "id": "edc7bb6a-d2b1-4164-8eb1-340b666fcaf7",
+      "catalog_id": "edc7bb6a-d2b1-4164-8eb1-340b666fcaf7",
+      "title": "Calls 闸门：函数调用边与时序",
+      "description": "calls-gate",
+      "extend": "{}",
+      "progress_status": "completed",
+      "repo_id": "93e55e64-e59a-8728-dd24-3a250e448ce7",
+      "reference_count": 0,
+      "gmt_create": "2026-11-07T12:10:15Z",
+      "gmt_modified": "2026-11-07T12:10:15Z"
+    },
+    {
+      "id": "fb0614ba-70e8-430c-832f-2dc623a0c0d6",
+      "catalog_id": "fb0614ba-70e8-430c-832f-2dc623a0c0d6",
+      "title": "快速开始",
+      "description": "getting-started",
+      "extend": "{}",
+      "progress_status": "completed",
+      "repo_id": "93e55e64-e59a-8728-dd24-3a250e448ce7",
+      "reference_count": 0,
+      "gmt_create": "2026-11-07T12:10:15Z",
+      "gmt_modified": "2026-11-07T12:10:15Z"
+    },
+    {
+      "id": "43cc1d4a-9050-437b-89ec-80a4d5538bab",
+      "catalog_id": "43cc1d4a-9050-437b-89ec-80a4d5538bab",
+      "title": "run manifest 与 run.json",
+      "description": "run-manifest",
+      "extend": "{}",
+      "progress_status": "completed",
+      "repo_id": "93e55e64-e59a-8728-dd24-3a250e448ce7",
+      "reference_count": 0,
+      "gmt_create": "2026-11-07T12:10:15Z",
+      "gmt_modified": "2026-11-07T12:10:15Z"
+    },
+    {
+      "id": "48ca74c1-48ee-4d96-9329-84fd90401874",
+      "catalog_id": "48ca74c1-48ee-4d96-9329-84fd90401874",
+      "title": "总体架构",
+      "description": "architecture",
+      "extend": "{}",
+      "progress_status": "completed",
+      "repo_id": "93e55e64-e59a-8728-dd24-3a250e448ce7",
+      "reference_count": 0,
+      "gmt_create": "2026-11-07T12:10:15Z",
+      "gmt_modified": "2026-11-07T12:10:15Z"
+    },
+    {
+      "id": "50527f0a-2dc6-4e90-ab82-09ee862b34b5",
+      "catalog_id": "50527f0a-2dc6-4e90-ab82-09ee862b34b5",
+      "title": "Coverage 闸门：源码行覆盖率原始数据",
+      "description": "coverage-gate",
+      "extend": "{}",
+      "progress_status": "completed",
+      "repo_id": "93e55e64-e59a-8728-dd24-3a250e448ce7",
+      "reference_count": 0,
+      "gmt_create": "2026-11-07T12:10:15Z",
+      "gmt_modified": "2026-11-07T12:10:15Z"
+    },
+    {
+      "id": "a6e5eb05-41c9-43eb-a661-8dec977d59d1",
+      "catalog_id": "a6e5eb05-41c9-43eb-a661-8dec977d59d1",
+      "title": "覆盖率卡片与时序卡片",
+      "description": "coverage-timing-cards",
+      "extend": "{}",
+      "progress_status": "completed",
+      "repo_id": "93e55e64-e59a-8728-dd24-3a250e448ce7",
+      "reference_count": 0,
+      "gmt_create": "2026-11-07T12:10:15Z",
+      "gmt_modified": "2026-11-07T12:10:15Z"
+    },
+    {
+      "id": "e6cdccb1-0314-4d97-baba-a8847c326867",
+      "catalog_id": "e6cdccb1-0314-4d97-baba-a8847c326867",
+      "title": "run key 与 hash8 标识体系",
+      "description": "run-key-and-hash8",
+      "extend": "{}",
+      "progress_status": "completed",
+      "repo_id": "93e55e64-e59a-8728-dd24-3a250e448ce7",
+      "reference_count": 0,
+      "gmt_create": "2026-11-07T12:10:15Z",
+      "gmt_modified": "2026-11-07T12:10:15Z"
+    },
+    {
+      "id": "15a8ac65-6797-4183-ad37-29d0cd779c24",
+      "catalog_id": "15a8ac65-6797-4183-ad37-29d0cd779c24",
+      "title": "指标汇总、筛选与差异卡片",
+      "description": "metrics-filter-diff-cards",
+      "extend": "{}",
+      "progress_status": "completed",
+      "repo_id": "93e55e64-e59a-8728-dd24-3a250e448ce7",
+      "reference_count": 0,
+      "gmt_create": "2026-11-07T12:10:15Z",
+      "gmt_modified": "2026-11-07T12:10:15Z"
+    },
+    {
+      "id": "305ce342-3ca6-401a-ba93-8e72fbfea617",
+      "catalog_id": "305ce342-3ca6-401a-ba93-8e72fbfea617",
+      "title": "run manifest 分类 new/duplicate/conflict/incomplete",
+      "description": "manifest-classification",
+      "extend": "{}",
+      "progress_status": "completed",
+      "repo_id": "93e55e64-e59a-8728-dd24-3a250e448ce7",
+      "reference_count": 0,
+      "gmt_create": "2026-11-07T12:10:15Z",
+      "gmt_modified": "2026-11-07T12:10:15Z"
+    },
+    {
+      "id": "57e0e826-7850-4b53-b2af-26ec1a8352fc",
+      "catalog_id": "57e0e826-7850-4b53-b2af-26ec1a8352fc",
+      "title": "宿主引擎",
+      "description": "host-engine",
+      "extend": "{}",
+      "progress_status": "completed",
+      "repo_id": "93e55e64-e59a-8728-dd24-3a250e448ce7",
+      "reference_count": 0,
+      "gmt_create": "2026-11-07T12:10:15Z",
+      "gmt_modified": "2026-11-07T12:10:15Z"
+    },
+    {
+      "id": "8bc9801c-f12f-479d-8492-933401d9adff",
+      "catalog_id": "8bc9801c-f12f-479d-8492-933401d9adff",
+      "title": "run key 与 hash8 计算",
+      "description": "run-key-hash",
+      "extend": "{}",
+      "progress_status": "completed",
+      "repo_id": "93e55e64-e59a-8728-dd24-3a250e448ce7",
+      "reference_count": 0,
+      "gmt_create": "2026-11-07T12:10:15Z",
+      "gmt_modified": "2026-11-07T12:10:15Z"
+    },
+    {
+      "id": "59005319-6909-402a-b402-8b3b77de7d2a",
+      "catalog_id": "59005319-6909-402a-b402-8b3b77de7d2a",
+      "title": "Blender 子进程封装",
+      "description": "blender-subprocess",
+      "extend": "{}",
+      "progress_status": "completed",
+      "repo_id": "93e55e64-e59a-8728-dd24-3a250e448ce7",
+      "reference_count": 0,
+      "gmt_create": "2026-11-07T12:10:15Z",
+      "gmt_modified": "2026-11-07T12:10:15Z"
+    },
+    {
+      "id": "84cd5552-ec85-4018-a247-51b18e639394",
+      "catalog_id": "84cd5552-ec85-4018-a247-51b18e639394",
+      "title": "Blender 底座与评估脚本接口",
+      "description": "blender-bootstrap",
+      "extend": "{}",
+      "progress_status": "completed",
+      "repo_id": "93e55e64-e59a-8728-dd24-3a250e448ce7",
+      "reference_count": 0,
+      "gmt_create": "2026-11-07T12:10:15Z",
+      "gmt_modified": "2026-11-07T12:10:15Z"
+    },
+    {
+      "id": "8e308224-ae1e-42ba-a2d3-fecffe81d01a",
+      "catalog_id": "8e308224-ae1e-42ba-a2d3-fecffe81d01a",
+      "title": "卡片流水线执行与产物管理",
+      "description": "card-pipeline-execution",
+      "extend": "{}",
+      "progress_status": "completed",
+      "repo_id": "93e55e64-e59a-8728-dd24-3a250e448ce7",
+      "reference_count": 0,
+      "gmt_create": "2026-11-07T12:10:15Z",
+      "gmt_modified": "2026-11-07T12:10:15Z"
+    },
+    {
+      "id": "99073f17-38ff-4ede-b2d5-73e6c1cde26d",
+      "catalog_id": "99073f17-38ff-4ede-b2d5-73e6c1cde26d",
+      "title": "Blender 子进程启动器",
+      "description": "blender-process-launcher",
+      "extend": "{}",
+      "progress_status": "completed",
+      "repo_id": "93e55e64-e59a-8728-dd24-3a250e448ce7",
+      "reference_count": 0,
+      "gmt_create": "2026-11-07T12:10:15Z",
+      "gmt_modified": "2026-11-07T12:10:15Z"
+    },
+    {
+      "id": "7653709b-b7b8-4606-84e5-6dec97f48a47",
+      "catalog_id": "7653709b-b7b8-4606-84e5-6dec97f48a47",
+      "title": "路径规范化与安全文件名工具",
+      "description": "path-utils",
+      "extend": "{}",
+      "progress_status": "completed",
+      "repo_id": "93e55e64-e59a-8728-dd24-3a250e448ce7",
+      "reference_count": 0,
+      "gmt_create": "2026-11-07T12:10:15Z",
+      "gmt_modified": "2026-11-07T12:10:15Z"
+    },
+    {
+      "id": "c367d385-e031-43a5-9e3c-fb90b19da8d7",
+      "catalog_id": "c367d385-e031-43a5-9e3c-fb90b19da8d7",
+      "title": "基础设施层",
+      "description": "infrastructure",
+      "extend": "{}",
+      "progress_status": "completed",
+      "repo_id": "93e55e64-e59a-8728-dd24-3a250e448ce7",
+      "reference_count": 0,
+      "gmt_create": "2026-11-07T12:10:15Z",
+      "gmt_modified": "2026-11-07T12:10:15Z"
+    },
+    {
+      "id": "f1e42fa9-b40e-4357-bfdc-5a89273fc7c8",
+      "catalog_id": "f1e42fa9-b40e-4357-bfdc-5a89273fc7c8",
+      "title": "卡片流水线与线程池执行",
+      "description": "card-pipeline-and-threading",
+      "extend": "{}",
+      "progress_status": "completed",
+      "repo_id": "93e55e64-e59a-8728-dd24-3a250e448ce7",
+      "reference_count": 0,
+      "gmt_create": "2026-11-07T12:10:15Z",
+      "gmt_modified": "2026-11-07T12:10:15Z"
+    },
+    {
+      "id": "ed13130f-ed91-452c-b6ce-9d12c81ea32f",
+      "catalog_id": "ed13130f-ed91-452c-b6ce-9d12c81ea32f",
+      "title": "数据采集闸门",
+      "description": "data-collection-gates",
+      "extend": "{}",
+      "progress_status": "completed",
+      "repo_id": "93e55e64-e59a-8728-dd24-3a250e448ce7",
+      "reference_count": 0,
+      "gmt_create": "2026-11-07T12:10:15Z",
+      "gmt_modified": "2026-11-07T12:10:15Z"
+    },
+    {
+      "id": "ff6501f0-6aeb-4bb8-8f44-cf59941130cd",
+      "catalog_id": "ff6501f0-6aeb-4bb8-8f44-cf59941130cd",
+      "title": "翻译卡片流水线",
+      "description": "translation-card-pipeline",
+      "extend": "{}",
+      "progress_status": "completed",
+      "repo_id": "93e55e64-e59a-8728-dd24-3a250e448ce7",
+      "reference_count": 0,
+      "gmt_create": "2026-11-07T12:10:15Z",
+      "gmt_modified": "2026-11-07T12:10:15Z"
+    },
+    {
+      "id": "ad0b8b0f-0094-4285-90eb-05d60ca51452",
+      "catalog_id": "ad0b8b0f-0094-4285-90eb-05d60ca51452",
+      "title": "节点边界检测",
+      "description": "node-boundary-detection",
+      "extend": "{}",
+      "progress_status": "completed",
+      "repo_id": "93e55e64-e59a-8728-dd24-3a250e448ce7",
+      "reference_count": 0,
+      "gmt_create": "2026-11-07T12:10:15Z",
+      "gmt_modified": "2026-11-07T12:10:15Z"
+    },
+    {
+      "id": "4dcf418c-3a73-4b2b-a7e3-b6d14a37e977",
+      "catalog_id": "4dcf418c-3a73-4b2b-a7e3-b6d14a37e977",
+      "title": "工具与可视化",
+      "description": "tools-and-visualization",
+      "extend": "{}",
+      "progress_status": "completed",
+      "repo_id": "93e55e64-e59a-8728-dd24-3a250e448ce7",
+      "reference_count": 0,
+      "gmt_create": "2026-11-07T12:10:15Z",
+      "gmt_modified": "2026-11-07T12:10:15Z"
+    },
+    {
+      "id": "8e322537-c629-4bc4-9930-47469f41c825",
+      "catalog_id": "8e322537-c629-4bc4-9930-47469f41c825",
+      "title": "测试与质量保障",
+      "description": "testing-and-quality",
+      "extend": "{}",
+      "progress_status": "completed",
+      "repo_id": "93e55e64-e59a-8728-dd24-3a250e448ce7",
+      "reference_count": 0,
+      "gmt_create": "2026-11-07T12:10:15Z",
+      "gmt_modified": "2026-11-07T12:10:15Z"
+    },
+    {
+      "id": "13eb993f-eaa6-417d-b546-a476c4210125",
+      "catalog_id": "13eb993f-eaa6-417d-b546-a476c4210125",
+      "title": "部署与运行环境",
+      "description": "deployment-and-environment",
+      "extend": "{}",
+      "progress_status": "completed",
+      "repo_id": "93e55e64-e59a-8728-dd24-3a250e448ce7",
+      "reference_count": 0,
+      "gmt_create": "2026-11-07T12:10:15Z",
+      "gmt_modified": "2026-11-07T12:10:15Z"
+    },
+    {
+      "id": "f7fe7d3b-39d8-4e51-8519-5462cdc90501",
+      "catalog_id": "f7fe7d3b-39d8-4e51-8519-5462cdc90501",
+      "title": "故障排查",
+      "description": "troubleshooting",
+      "extend": "{}",
+      "progress_status": "completed",
+      "repo_id": "93e55e64-e59a-8728-dd24-3a250e448ce7",
+      "reference_count": 0,
+      "gmt_create": "2026-11-07T12:10:15Z",
+      "gmt_modified": "2026-11-07T12:10:15Z"
+    },
+    {
+      "id": "a987bae7-d7b7-43db-a9bc-0596500b985d",
+      "catalog_id": "a987bae7-d7b7-43db-a9bc-0596500b985d",
+      "title": "扩展指南",
+      "description": "extension-guide",
+      "extend": "{}",
+      "progress_status": "completed",
+      "repo_id": "93e55e64-e59a-8728-dd24-3a250e448ce7",
+      "reference_count": 0,
+      "gmt_create": "2026-11-07T12:10:15Z",
+      "gmt_modified": "2026-11-07T12:10:15Z"
+    }
+  ],
+  "knowledge_relations": [
+    {
+      "id": 1,
+      "source_id": "ed13130f-ed91-452c-b6ce-9d12c81ea32f",
+      "target_id": "59036cf5-154e-4f20-8eb2-f9d96c04cd7e",
+      "source_type": "WIKI_ITEM",
+      "target_type": "WIKI_ITEM",
+      "relationship_type": "PARENT_CHILD",
+      "gmt_create": "2026-11-07T12:10:15Z",
+      "gmt_modified": "2026-11-07T12:10:15Z"
+    },
+    {
+      "id": 2,
+      "source_id": "c367d385-e031-43a5-9e3c-fb90b19da8d7",
+      "target_id": "ae4334b5-8006-4fbf-9711-29f84a27bfa7",
+      "source_type": "WIKI_ITEM",
+      "target_type": "WIKI_ITEM",
+      "relationship_type": "PARENT_CHILD",
+      "gmt_create": "2026-11-07T12:10:15Z",
+      "gmt_modified": "2026-11-07T12:10:15Z"
+    },
+    {
+      "id": 3,
+      "source_id": "57e0e826-7850-4b53-b2af-26ec1a8352fc",
+      "target_id": "dfe8954b-1312-4f3c-91cd-ee6d64c4b2a9",
+      "source_type": "WIKI_ITEM",
+      "target_type": "WIKI_ITEM",
+      "relationship_type": "PARENT_CHILD",
+      "gmt_create": "2026-11-07T12:10:15Z",
+      "gmt_modified": "2026-11-07T12:10:15Z"
+    },
+    {
+      "id": 4,
+      "source_id": "ff6501f0-6aeb-4bb8-8f44-cf59941130cd",
+      "target_id": "ec2af893-25e0-4c2e-8207-06b602e380aa",
+      "source_type": "WIKI_ITEM",
+      "target_type": "WIKI_ITEM",
+      "relationship_type": "PARENT_CHILD",
+      "gmt_create": "2026-11-07T12:10:15Z",
+      "gmt_modified": "2026-11-07T12:10:15Z"
+    },
+    {
+      "id": 5,
+      "source_id": "84cd5552-ec85-4018-a247-51b18e639394",
+      "target_id": "f1c5d110-0442-46e6-9685-e9cf5d93f282",
+      "source_type": "WIKI_ITEM",
+      "target_type": "WIKI_ITEM",
+      "relationship_type": "PARENT_CHILD",
+      "gmt_create": "2026-11-07T12:10:15Z",
+      "gmt_modified": "2026-11-07T12:10:15Z"
+    },
+    {
+      "id": 6,
+      "source_id": "a987bae7-d7b7-43db-a9bc-0596500b985d",
+      "target_id": "f5825a20-2551-4db0-94ce-f1508749dfca",
+      "source_type": "WIKI_ITEM",
+      "target_type": "WIKI_ITEM",
+      "relationship_type": "PARENT_CHILD",
+      "gmt_create": "2026-11-07T12:10:15Z",
+      "gmt_modified": "2026-11-07T12:10:15Z"
+    },
+    {
+      "id": 7,
+      "source_id": "57e0e826-7850-4b53-b2af-26ec1a8352fc",
+      "target_id": "0bc3d2ed-a4ab-48dd-9aa2-1a459bb92d91",
+      "source_type": "WIKI_ITEM",
+      "target_type": "WIKI_ITEM",
+      "relationship_type": "PARENT_CHILD",
+      "gmt_create": "2026-11-07T12:10:15Z",
+      "gmt_modified": "2026-11-07T12:10:15Z"
+    },
+    {
+      "id": 8,
+      "source_id": "a987bae7-d7b7-43db-a9bc-0596500b985d",
+      "target_id": "42911309-6e9d-49ed-9553-5f647805e610",
+      "source_type": "WIKI_ITEM",
+      "target_type": "WIKI_ITEM",
+      "relationship_type": "PARENT_CHILD",
+      "gmt_create": "2026-11-07T12:10:15Z",
+      "gmt_modified": "2026-11-07T12:10:15Z"
+    },
+    {
+      "id": 9,
+      "source_id": "84cd5552-ec85-4018-a247-51b18e639394",
+      "target_id": "49348a13-3ce5-4949-92f9-91006a2dfb8a",
+      "source_type": "WIKI_ITEM",
+      "target_type": "WIKI_ITEM",
+      "relationship_type": "PARENT_CHILD",
+      "gmt_create": "2026-11-07T12:10:15Z",
+      "gmt_modified": "2026-11-07T12:10:15Z"
+    },
+    {
+      "id": 10,
+      "source_id": "c367d385-e031-43a5-9e3c-fb90b19da8d7",
+      "target_id": "a29c04b7-1c67-4de0-a996-ca45dab4f771",
+      "source_type": "WIKI_ITEM",
+      "target_type": "WIKI_ITEM",
+      "relationship_type": "PARENT_CHILD",
+      "gmt_create": "2026-11-07T12:10:15Z",
+      "gmt_modified": "2026-11-07T12:10:15Z"
+    },
+    {
+      "id": 11,
+      "source_id": "ff6501f0-6aeb-4bb8-8f44-cf59941130cd",
+      "target_id": "b0c5d763-0728-4d18-b8e1-d9279eb8bb4e",
+      "source_type": "WIKI_ITEM",
+      "target_type": "WIKI_ITEM",
+      "relationship_type": "PARENT_CHILD",
+      "gmt_create": "2026-11-07T12:10:15Z",
+      "gmt_modified": "2026-11-07T12:10:15Z"
+    },
+    {
+      "id": 12,
+      "source_id": "ed13130f-ed91-452c-b6ce-9d12c81ea32f",
+      "target_id": "edc7bb6a-d2b1-4164-8eb1-340b666fcaf7",
+      "source_type": "WIKI_ITEM",
+      "target_type": "WIKI_ITEM",
+      "relationship_type": "PARENT_CHILD",
+      "gmt_create": "2026-11-07T12:10:15Z",
+      "gmt_modified": "2026-11-07T12:10:15Z"
+    },
+    {
+      "id": 13,
+      "source_id": "c367d385-e031-43a5-9e3c-fb90b19da8d7",
+      "target_id": "43cc1d4a-9050-437b-89ec-80a4d5538bab",
+      "source_type": "WIKI_ITEM",
+      "target_type": "WIKI_ITEM",
+      "relationship_type": "PARENT_CHILD",
+      "gmt_create": "2026-11-07T12:10:15Z",
+      "gmt_modified": "2026-11-07T12:10:15Z"
+    },
+    {
+      "id": 14,
+      "source_id": "ed13130f-ed91-452c-b6ce-9d12c81ea32f",
+      "target_id": "50527f0a-2dc6-4e90-ab82-09ee862b34b5",
+      "source_type": "WIKI_ITEM",
+      "target_type": "WIKI_ITEM",
+      "relationship_type": "PARENT_CHILD",
+      "gmt_create": "2026-11-07T12:10:15Z",
+      "gmt_modified": "2026-11-07T12:10:15Z"
+    },
+    {
+      "id": 15,
+      "source_id": "ff6501f0-6aeb-4bb8-8f44-cf59941130cd",
+      "target_id": "a6e5eb05-41c9-43eb-a661-8dec977d59d1",
+      "source_type": "WIKI_ITEM",
+      "target_type": "WIKI_ITEM",
+      "relationship_type": "PARENT_CHILD",
+      "gmt_create": "2026-11-07T12:10:15Z",
+      "gmt_modified": "2026-11-07T12:10:15Z"
+    },
+    {
+      "id": 16,
+      "source_id": "57e0e826-7850-4b53-b2af-26ec1a8352fc",
+      "target_id": "e6cdccb1-0314-4d97-baba-a8847c326867",
+      "source_type": "WIKI_ITEM",
+      "target_type": "WIKI_ITEM",
+      "relationship_type": "PARENT_CHILD",
+      "gmt_create": "2026-11-07T12:10:15Z",
+      "gmt_modified": "2026-11-07T12:10:15Z"
+    },
+    {
+      "id": 17,
+      "source_id": "ff6501f0-6aeb-4bb8-8f44-cf59941130cd",
+      "target_id": "15a8ac65-6797-4183-ad37-29d0cd779c24",
+      "source_type": "WIKI_ITEM",
+      "target_type": "WIKI_ITEM",
+      "relationship_type": "PARENT_CHILD",
+      "gmt_create": "2026-11-07T12:10:15Z",
+      "gmt_modified": "2026-11-07T12:10:15Z"
+    },
+    {
+      "id": 18,
+      "source_id": "57e0e826-7850-4b53-b2af-26ec1a8352fc",
+      "target_id": "305ce342-3ca6-401a-ba93-8e72fbfea617",
+      "source_type": "WIKI_ITEM",
+      "target_type": "WIKI_ITEM",
+      "relationship_type": "PARENT_CHILD",
+      "gmt_create": "2026-11-07T12:10:15Z",
+      "gmt_modified": "2026-11-07T12:10:15Z"
+    },
+    {
+      "id": 19,
+      "source_id": "c367d385-e031-43a5-9e3c-fb90b19da8d7",
+      "target_id": "8bc9801c-f12f-479d-8492-933401d9adff",
+      "source_type": "WIKI_ITEM",
+      "target_type": "WIKI_ITEM",
+      "relationship_type": "PARENT_CHILD",
+      "gmt_create": "2026-11-07T12:10:15Z",
+      "gmt_modified": "2026-11-07T12:10:15Z"
+    },
+    {
+      "id": 20,
+      "source_id": "c367d385-e031-43a5-9e3c-fb90b19da8d7",
+      "target_id": "59005319-6909-402a-b402-8b3b77de7d2a",
+      "source_type": "WIKI_ITEM",
+      "target_type": "WIKI_ITEM",
+      "relationship_type": "PARENT_CHILD",
+      "gmt_create": "2026-11-07T12:10:15Z",
+      "gmt_modified": "2026-11-07T12:10:15Z"
+    },
+    {
+      "id": 21,
+      "source_id": "ff6501f0-6aeb-4bb8-8f44-cf59941130cd",
+      "target_id": "8e308224-ae1e-42ba-a2d3-fecffe81d01a",
+      "source_type": "WIKI_ITEM",
+      "target_type": "WIKI_ITEM",
+      "relationship_type": "PARENT_CHILD",
+      "gmt_create": "2026-11-07T12:10:15Z",
+      "gmt_modified": "2026-11-07T12:10:15Z"
+    },
+    {
+      "id": 22,
+      "source_id": "57e0e826-7850-4b53-b2af-26ec1a8352fc",
+      "target_id": "99073f17-38ff-4ede-b2d5-73e6c1cde26d",
+      "source_type": "WIKI_ITEM",
+      "target_type": "WIKI_ITEM",
+      "relationship_type": "PARENT_CHILD",
+      "gmt_create": "2026-11-07T12:10:15Z",
+      "gmt_modified": "2026-11-07T12:10:15Z"
+    },
+    {
+      "id": 23,
+      "source_id": "c367d385-e031-43a5-9e3c-fb90b19da8d7",
+      "target_id": "7653709b-b7b8-4606-84e5-6dec97f48a47",
+      "source_type": "WIKI_ITEM",
+      "target_type": "WIKI_ITEM",
+      "relationship_type": "PARENT_CHILD",
+      "gmt_create": "2026-11-07T12:10:15Z",
+      "gmt_modified": "2026-11-07T12:10:15Z"
+    },
+    {
+      "id": 24,
+      "source_id": "57e0e826-7850-4b53-b2af-26ec1a8352fc",
+      "target_id": "f1e42fa9-b40e-4357-bfdc-5a89273fc7c8",
+      "source_type": "WIKI_ITEM",
+      "target_type": "WIKI_ITEM",
+      "relationship_type": "PARENT_CHILD",
+      "gmt_create": "2026-11-07T12:10:15Z",
+      "gmt_modified": "2026-11-07T12:10:15Z"
+    }
+  ]
+}
