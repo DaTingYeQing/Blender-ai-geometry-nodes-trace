@@ -3,7 +3,7 @@
 在插桩版 Blender 中采集函数调用、调用边、计时和行覆盖率，并翻译成可读的 JSON 与图表产物。
 
 
-是这个`https://github.com/DaTingYeQing/Blender-ai-geometry-nodes`项目的扩展，此blender不可用来单独作为软件来使用。
+是这个 https://github.com/DaTingYeQing/Blender-ai-geometry-nodes 项目的扩展，此blender不可用来单独作为软件来使用。
 
 ## 目录结构
 
