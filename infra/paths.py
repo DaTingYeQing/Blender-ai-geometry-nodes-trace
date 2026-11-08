@@ -28,5 +28,10 @@ def file_fingerprint(path):
 
 
 def pdb_for(blender):
+    # The exe embeds the PDB name "blender_private.pdb"; dbghelp only finds that name.
+    # Prefer it so the run-key fingerprint matches the PDB dbghelp actually loads.
+    private = os.path.join(os.path.dirname(blender), "blender_private.pdb")
+    if os.path.isfile(private):
+        return private
     stem, _ = os.path.splitext(blender)
     return stem + ".pdb"
