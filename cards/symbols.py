@@ -10,6 +10,8 @@ import os
 import time
 from ctypes import wintypes
 
+import directories
+
 IMAGE_BASE = 0x140000000
 SYMBOL_INFO_SIZE = 88
 NAME_CHARS = 2048
@@ -153,12 +155,28 @@ def address_of(name):
     return int(sym.Address) - int(MOD_BASE)
 
 
+_SOURCE_ROOTS = tuple(
+    dict.fromkeys(
+        r.replace("\\", "/").rstrip("/").lower()
+        for r in (directories.PDB_SOURCE_DIR, directories.SOURCE_DIR)
+        if r and r.strip()
+    )
+)
+
+
 def norm_path(f):
     if not f:
         return ""
     q = f.replace("\\", "/")
+    low = q.lower()
+    for root in _SOURCE_ROOTS:
+        if low == root:
+            return ""
+        if low.startswith(root + "/"):
+            return q[len(root) + 1:]
+    # Fallback for the default Blender source directory name.
     mark = "/blender-4.5.0/"
-    i = q.lower().find(mark)
+    i = low.find(mark)
     if i >= 0:
         return q[i + len(mark):]
     return q
