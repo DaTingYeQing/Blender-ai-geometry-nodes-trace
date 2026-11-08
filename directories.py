@@ -8,7 +8,12 @@ ROOT = os.path.dirname(os.path.abspath(__file__))
 BLENDER_BIN_DIR = r"D:\blender-src\build_windows_x64_ClangCovTrace\bin"
 LLVM_BIN_DIR = r"D:\tools\llvm\bin"
 GRAPHVIZ_BIN_DIR = r"D:\qcachegrind074-x86"
-SOURCE_DIR = r"D:\blender-src\blender-4.5.0"
+
+# Root recorded in the PDB and coverage data (build machine path).
+# Only change this for a build compiled with path remapping.
+PDB_SOURCE_DIR = os.environ.get("COVTRACE_PDB_SOURCE_DIR", r"D:\blender-src\blender-4.5.0")
+# Actual source checkout on this machine. Defaults to the recorded root.
+SOURCE_DIR = os.environ.get("COVTRACE_SOURCE_DIR", PDB_SOURCE_DIR)
 
 OUT_DIR = os.path.join(ROOT, "out")
 CACHE_DIR = os.path.join(ROOT, "cache")

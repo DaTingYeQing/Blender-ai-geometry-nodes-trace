@@ -20,7 +20,10 @@ from .base import TranslationCard
 
 LLVM_COV = directories.LLVM_COV_EXE
 LLVM_PROFDATA = directories.LLVM_PROFDATA_EXE
-SOURCE_ROOT = directories.SOURCE_DIR
+# Prefix used by paths recorded in the PDB / coverage data.
+SOURCE_ROOT = directories.PDB_SOURCE_DIR
+# Where the source actually lives on this machine.
+LOCAL_SOURCE_ROOT = directories.SOURCE_DIR
 
 KEEP_PREFIXES = ("source/", "intern/")
 HEADER_EXT = (".hh", ".h", ".hpp", ".hxx", ".inl", ".ipp", ".inc")
@@ -28,6 +31,15 @@ HEADER_EXT = (".hh", ".h", ".hpp", ".hxx", ".inl", ".ipp", ".inc")
 DATA_RE = re.compile(r"^\s*(\d+)\|([^|]*)\|(.*)$")
 COUNT_RE = re.compile(r"^(\d+(?:\.\d+)?)([kMG]?)$")
 COUNT_MULT = {"": 1, "k": 1_000, "M": 1_000_000, "G": 1_000_000_000}
+
+
+def path_equivalence_args():
+    """Let llvm-cov read sources from a checkout outside the build path."""
+    from_root = os.path.normpath(SOURCE_ROOT)
+    to_root = os.path.normpath(LOCAL_SOURCE_ROOT)
+    if os.path.normcase(from_root) == os.path.normcase(to_root):
+        return []
+    return ["--path-equivalence=%s,%s" % (from_root, to_root)]
 
 
 def parse_count(text):
@@ -42,9 +54,10 @@ def parse_count(text):
 
 def to_rel(path):
     p = path.replace("\\", "/")
-    root = SOURCE_ROOT.replace("\\", "/")
-    if p.lower().startswith(root.lower() + "/"):
-        return p[len(root) + 1:]
+    for root in (SOURCE_ROOT, LOCAL_SOURCE_ROOT):
+        r = root.replace("\\", "/")
+        if p.lower().startswith(r.lower() + "/"):
+            return p[len(r) + 1:]
     return p
 
 
@@ -102,7 +115,8 @@ def export_lcov(exe, profdata, out_path):
             [LLVM_COV, "export", exe, "-instr-profile=" + profdata,
              "--unify-instantiations", "--skip-branches", "--skip-expansions",
              "-format=lcov",
-             r"--include-filename-regex=blender-4\.5\.0[\\/](source|intern)[\\/]"],
+             r"--include-filename-regex=[\\/](source|intern)[\\/]",
+             *path_equivalence_args()],
             stdout=fh, check=True)
 
 
@@ -202,7 +216,8 @@ class CoverageCard(TranslationCard):
                         [LLVM_COV, "show", exe, "-instr-profile=" + profdata,
                          "-show-line-counts-or-regions",
                          "-show-instantiations=false",
-                         "-show-expansions=false"],
+                         "-show-expansions=false",
+                         *path_equivalence_args()],
                         stdout=fh, check=True)
 
             with ThreadPoolExecutor(max_workers=2) as pool:
