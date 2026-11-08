@@ -1,0 +1,1 @@
+CMake ≥ 3.10; requires GCC ≥ 11, Clang ≥ 8, or MSVC ≥ 1928 (VS 2019 16.9.16).

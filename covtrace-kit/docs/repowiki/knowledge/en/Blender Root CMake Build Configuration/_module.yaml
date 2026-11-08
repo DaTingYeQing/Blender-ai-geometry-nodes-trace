@@ -1,0 +1,38 @@
+schema_version: 1
+module_path: root
+title: Blender Root CMake Build Configuration
+scope:
+    - CMakeLists.txt
+source_files: []
+depends_on: []
+related_to: []
+kk_module_id: 6add2abb-6f39-4c7c-9467-ef5aa62cbfd7
+kk_cards:
+    architecture_design:
+        id: 68ffa7ba-92a3-4a07-bc63-e80cb118a83b
+        title: Blender Root CMake Build Configuration
+    coding_conventions:
+        id: 82e4655f-c86e-4904-b0a4-8e359768ea9d
+        title: Blender Root CMake Build Configuration
+    overview:
+        id: 744a53d0-3fc5-4099-8a8e-4ca49c46b9ba
+        title: Blender Root CMake Build Configuration
+    tech_stack:
+        id: cbc0bf6e-d8fa-472a-b007-d762d5bc6950
+        title: Blender Root CMake Build Configuration
+    unique_setup_and_commands:
+        id: 7099160f-ae2f-45c0-ac7b-6eb71dcfaeee
+        title: Blender Root CMake Build Configuration
+    build_system:
+        id: b7ab240f-9592-416c-83f9-a416620c840d
+        title: CMake-based Build System (Blender Root Configuration)
+    configuration_system:
+        id: cb6422d2-53e6-4786-b459-5e87c53c56f2
+        title: CMake-Based Build Configuration System
+    error_handling:
+        id: f61f408c-2f55-48c2-8dd7-48edb0eedbcc
+        title: CMake Build Error Handling via FATAL_ERROR and Compiler -Werror Flags
+kk_repo_cards:
+    - build_system
+    - configuration_system
+    - error_handling

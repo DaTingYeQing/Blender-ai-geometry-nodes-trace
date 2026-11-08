@@ -1,0 +1,3 @@
+- Compiler/library minimums are enforced via explicit `message(FATAL_ERROR ...)` checks keyed on `CMAKE_COMPILER_IS_GNUCC`, `CMAKE_CXX_COMPILER_ID STREQUAL "MSVC"`, and Clang variants, keeping version gating centralized at the top of the script.
+- Optional CMake features are gated by `if(POLICY CMPxxxx)` plus `cmake_policy(SET CMPxxxx NEW)` blocks so older generators skip unsupported policies without failing.
+- Project-wide configuration defaults are wrapped in `if(NOT DEFINED …)` guards and often paired with `mark_as_advanced(...)` to keep internal variables hidden from the default cache view.

@@ -1,0 +1,620 @@
+{
+  "wiki_repo": {
+    "id": "5f11ef3f-4459-a376-0ecc-b974df3903a2",
+    "name": "blender-4.5.0-changes",
+    "progress_status": "completed",
+    "wiki_present_status": "COMPLETED",
+    "recovery_checkpoint": "wiki_generation_completed",
+    "last_commit_id": "local",
+    "last_commit_update": "2026-11-08T04:08:34Z",
+    "gmt_create": "2026-11-08T04:08:34Z",
+    "gmt_modified": "2026-11-08T04:08:34Z",
+    "extend_info": "{\"language\":\"en\",\"active\":true,\"branch\":\"local\"}"
+  },
+  "wiki_catalogs": [
+    {
+      "id": "0afef3f7-c1b1-407c-b876-b518cfed4b43",
+      "repo_id": "5f11ef3f-4459-a376-0ecc-b974df3903a2",
+      "name": "Bltrace API",
+      "description": "bltrace-api",
+      "prompt": "Create comprehensive API documentation for the bltrace library functions. Document all public functions including bltrace_arm(), bltrace_disarm(), bltrace_enter(), bltrace_exit(), bltrace_dump(), bltrace_dump_edges(), bltrace_dump_timings(), bltrace_count(), bltrace_edge_count(), and bltrace_timing_count(). For each function, specify the exact parameters with their types and meanings, return values and error codes, preconditions that must be met before calling, postconditions after successful execution, thread safety guarantees, and any platform-specific behavior differences between MSVC and Clang toolchains. Include concrete code examples demonstrating typical usage patterns such as enabling tracing around specific operations, dumping trace data to files in different formats, managing call stack state manually, and querying trace statistics. Document the internal data structures used by these functions including slot tables, TLS stacks, edge records, and timing records. Address performance implications of each API call, memory allocation patterns, and best practices for minimizing overhead in production code paths. Explain the relationship between _penter/_pexit hooks and manual enter/exit calls.",
+      "progress_status": "completed",
+      "dependent_files": "bltrace/bltrace_hook.c",
+      "gmt_create": "2026-11-08T04:08:34Z",
+      "gmt_modified": "2026-11-08T04:08:34Z",
+      "parent_id": "1aecba84-a89e-4fcc-9144-ac86bcd8ce13",
+      "layer_level": 1,
+      "kk_dependent_files": [
+        "bltrace/bltrace_hook.c"
+      ]
+    },
+    {
+      "id": "7075685f-4722-4f60-894f-7551fdf502c5",
+      "repo_id": "5f11ef3f-4459-a376-0ecc-b974df3903a2",
+      "name": "Project Overview",
+      "description": "project-overview",
+      "prompt": "Create comprehensive content for the Blender Build Instrumentation Extension project overview. Explain its purpose as a specialized build-system extension that adds profiling and coverage capabilities to Blender's CMake-based build system. Document the two core libraries (bltrace for function call tracing and covtrace for coverage window control), their relationship to Blender's main build, and how they integrate with MSVC /Gh hooks and Clang -finstrument-functions. Include supported platforms (Windows), compilers (MSVC 2019+, Clang 8+), and the overall architecture showing how these libraries provide low-overhead function entry/exit hooking and LLVM coverage runtime integration. Provide context about when and why developers would use this toolchain within the Blender development workflow.",
+      "progress_status": "completed",
+      "dependent_files": "CMakeLists.txt,bltrace/CMakeLists.txt,covtrace/CMakeLists.txt",
+      "gmt_create": "2026-11-08T04:08:34Z",
+      "gmt_modified": "2026-11-08T04:08:34Z",
+      "kk_dependent_files": [
+        "CMakeLists.txt",
+        "bltrace/CMakeLists.txt",
+        "covtrace/CMakeLists.txt"
+      ]
+    },
+    {
+      "id": "a90416b8-6e46-4cc6-8978-3726cce23457",
+      "repo_id": "5f11ef3f-4459-a376-0ecc-b974df3903a2",
+      "name": "Tracing Engine (bltrace)",
+      "description": "tracing-engine",
+      "prompt": "Create comprehensive content for the bltrace tracing engine core. Explain the function call graph recording system including caller-callee edge tracking, per-function timing measurement using high-resolution performance counters, and thread-local call stack management. Document the slot table architecture with collision resolution for concurrent trace collection. Detail the data structures used for storing RVAs, inclusive/self time measurements, and edge relationships. Explain the lock-free design patterns used to minimize overhead during tracing. Include concrete examples of how function entries and exits are recorded, how the TLS stack maintains hierarchical call context, and how timing data is accumulated. Address performance considerations, memory allocation strategies, and the trade-offs between tracing granularity and runtime overhead.",
+      "progress_status": "completed",
+      "dependent_files": "bltrace/bltrace_hook.c,bltrace/CMakeLists.txt",
+      "gmt_create": "2026-11-08T04:08:34Z",
+      "gmt_modified": "2026-11-08T04:08:34Z",
+      "parent_id": "49cc9db7-1d1f-40a2-9def-17584c6d6aa3",
+      "layer_level": 1,
+      "kk_dependent_files": [
+        "bltrace/bltrace_hook.c",
+        "bltrace/CMakeLists.txt"
+      ]
+    },
+    {
+      "id": "fcf019e8-5940-4472-a22b-c738c6d11d76",
+      "repo_id": "5f11ef3f-4459-a376-0ecc-b974df3903a2",
+      "name": "Function Hooking Mechanisms",
+      "description": "function-hooking-mechanisms",
+      "prompt": "Create comprehensive documentation for the function hooking mechanisms in bltrace. Explain how MSVC /Gh hooks work through _penter and _pexit entry points, including the MASM-generated assembly stubs that capture function addresses and pass them to C code. Detail the Clang instrumentation approach using -finstrument-functions with __cyg_profile_func_enter and __cyg_profile_func_exit. Document the RVAs (Relative Virtual Addresses) system used to identify functions without requiring symbol resolution at runtime. Explain the hook installation process during initialization, the call stack management that tracks parent-child relationships between function calls, and how the system handles nested function calls and returns. Include practical examples of hook overhead measurements, thread safety considerations, and the performance impact of different hooking strategies.",
+      "progress_status": "completed",
+      "dependent_files": "bltrace/bltrace_hook.c,bltrace/bltrace_penter.asm",
+      "gmt_create": "2026-11-08T04:08:34Z",
+      "gmt_modified": "2026-11-08T04:08:34Z",
+      "parent_id": "6f2ad8ed-26dc-493e-962e-de8ea945e8c6",
+      "layer_level": 1,
+      "kk_dependent_files": [
+        "bltrace/bltrace_hook.c",
+        "bltrace/bltrace_penter.asm"
+      ]
+    },
+    {
+      "id": "4e47bd44-89a9-4d27-a271-685b0613bc72",
+      "repo_id": "5f11ef3f-4459-a376-0ecc-b974df3903a2",
+      "name": "Covtrace API",
+      "description": "covtrace-api",
+      "prompt": "Create detailed API documentation for the covtrace library functions that provide coverage window management capabilities. Document all public functions including covtrace_arm(), covtrace_dump(), covtrace_disarm(), and the covtrace_calls_* variants (covtrace_calls_start(), covtrace_calls_stop(), covtrace_calls_reset(), covtrace_calls_dump()) that wrap bltrace functionality. For each function, specify parameters with their types and valid values, return codes and error conditions, thread safety properties, and interaction with the underlying LLVM coverage runtime. Include practical code examples showing how to configure profraw output paths, manage coverage windows during test execution, dump coverage profiles at specific intervals, and integrate coverage collection with application lifecycle events. Document the relationship between covtrace and bltrace APIs, explaining when to use each approach. Cover the serialized output format produced by dump functions, including file naming conventions and profile data structure. Address performance considerations specific to coverage collection versus pure function tracing, and provide guidance on choosing appropriate coverage strategies for different testing scenarios.",
+      "progress_status": "completed",
+      "dependent_files": "covtrace/covtrace_hook.c",
+      "gmt_create": "2026-11-08T04:08:34Z",
+      "gmt_modified": "2026-11-08T04:08:34Z",
+      "parent_id": "1aecba84-a89e-4fcc-9144-ac86bcd8ce13",
+      "layer_level": 1,
+      "order": 1,
+      "kk_dependent_files": [
+        "covtrace/covtrace_hook.c"
+      ]
+    },
+    {
+      "id": "8b9028ba-448c-4d70-8961-706fca153d2f",
+      "repo_id": "5f11ef3f-4459-a376-0ecc-b974df3903a2",
+      "name": "Coverage Control (covtrace)",
+      "description": "coverage-control",
+      "prompt": "Develop detailed content for the covtrace coverage control layer. Explain how it serves as a public API facade over both bltrace function tracing and LLVM coverage runtime. Document the profile window management lifecycle including arm/dump/disarm operations, profraw file configuration, and automatic exit-time file writing control. Detail the integration with LLVM's coverage instrumentation for generating coverage profiles within bounded time windows. Include usage patterns for controlling coverage data collection, configuring output paths, and coordinating with the underlying tracing system. Address the relationship between function-level tracing and line-branch coverage data, explaining when each tool should be used and how they complement each other.",
+      "progress_status": "completed",
+      "dependent_files": "covtrace/covtrace_hook.c,covtrace/CMakeLists.txt",
+      "gmt_create": "2026-11-08T04:08:34Z",
+      "gmt_modified": "2026-11-08T04:08:34Z",
+      "parent_id": "49cc9db7-1d1f-40a2-9def-17584c6d6aa3",
+      "layer_level": 1,
+      "order": 1,
+      "kk_dependent_files": [
+        "covtrace/covtrace_hook.c",
+        "covtrace/CMakeLists.txt"
+      ]
+    },
+    {
+      "id": "c532e303-c49e-43f0-933f-5abb9524bc05",
+      "repo_id": "5f11ef3f-4459-a376-0ecc-b974df3903a2",
+      "name": "Getting Started",
+      "description": "getting-started",
+      "prompt": "Create comprehensive getting started content for the Blender Build Instrumentation Extension. Document prerequisites including Windows platform requirements, supported compiler versions (MSVC 2019+ or Clang 8+), and the requirement for out-of-source CMake builds. Provide step-by-step instructions for enabling tracing through BTRACE_GH and BTRACE_CLANG CMake options, explaining when to use each option based on the compiler. Include basic usage examples showing how to configure a build, enable function tracing, and generate trace data. Document the build configuration flow from root CMakeLists.txt through intern and source subdirectories. Address common setup issues such as in-source build prevention and compiler detection. Make this accessible to beginners while providing sufficient technical depth for experienced developers setting up their first traced build.",
+      "progress_status": "completed",
+      "dependent_files": "CMakeLists.txt,intern/CMakeLists.txt,source/CMakeLists.txt",
+      "gmt_create": "2026-11-08T04:08:34Z",
+      "gmt_modified": "2026-11-08T04:08:34Z",
+      "order": 1,
+      "kk_dependent_files": [
+        "CMakeLists.txt",
+        "intern/CMakeLists.txt",
+        "source/CMakeLists.txt"
+      ]
+    },
+    {
+      "id": "d468d507-566d-46ba-8723-ead29b0486ed",
+      "repo_id": "5f11ef3f-4459-a376-0ecc-b974df3903a2",
+      "name": "Data Structures and Algorithms",
+      "description": "data-structures-algorithms",
+      "prompt": "Develop detailed documentation for the data structures and algorithms used in bltrace's trace collection system. Thoroughly explain the TlsFrame structure for per-call-frame information, TlsStack for thread-local call stack management, and TimingSlot for storing timing measurements. Document the slot table implementation using hash-based collision resolution with atomic operations for thread safety. Detail the edge table algorithm for recording caller-callee relationships, the memory allocation strategy for dynamic slot growth, and the serialization format for output files. Include mathematical analysis of hash distribution, collision handling performance, and memory usage patterns. Provide concrete examples of data structure layouts, allocation scenarios, and the trade-offs between table size, collision rate, and memory consumption.",
+      "progress_status": "completed",
+      "dependent_files": "bltrace/bltrace_hook.c",
+      "gmt_create": "2026-11-08T04:08:34Z",
+      "gmt_modified": "2026-11-08T04:08:34Z",
+      "parent_id": "6f2ad8ed-26dc-493e-962e-de8ea945e8c6",
+      "layer_level": 1,
+      "order": 1,
+      "kk_dependent_files": [
+        "bltrace/bltrace_hook.c"
+      ]
+    },
+    {
+      "id": "49cc9db7-1d1f-40a2-9def-17584c6d6aa3",
+      "repo_id": "5f11ef3f-4459-a376-0ecc-b974df3903a2",
+      "name": "Architecture Overview",
+      "description": "architecture",
+      "prompt": "Create architectural documentation for the Blender Build Instrumentation Extension. Describe the high-level design showing the separation between bltrace (core tracing library) and covtrace (coverage API facade). Document the bridge pattern used for toolchain abstraction between MSVC /Gh hooks and Clang -finstrument-functions. Explain component interactions: how MASM-generated _penter/_pexit stubs and Clang shims both route to the shared bltrace_hook.c core. Detail the data flow from function calls through hook interception to TLS stack management and slot table recording. Document the coordination between function tracing and LLVM coverage runtime for profile window management. Include system boundaries showing where the instrumentation code integrates with Blender's build system and application lifecycle. Address cross-cutting concerns like thread-local storage, performance counter usage, and lock-free data structures.",
+      "progress_status": "completed",
+      "dependent_files": "bltrace/bltrace_hook.c,bltrace/bltrace_clang_shim.c,bltrace/bltrace_penter.asm,covtrace/covtrace_hook.c",
+      "gmt_create": "2026-11-08T04:08:34Z",
+      "gmt_modified": "2026-11-08T04:08:34Z",
+      "order": 2,
+      "kk_dependent_files": [
+        "bltrace/bltrace_hook.c",
+        "bltrace/bltrace_clang_shim.c",
+        "bltrace/bltrace_penter.asm",
+        "covtrace/covtrace_hook.c"
+      ]
+    },
+    {
+      "id": "72b9518d-c20c-4c9b-a488-e3c627a30b67",
+      "repo_id": "5f11ef3f-4459-a376-0ecc-b974df3903a2",
+      "name": "Toolchain Abstraction Layer",
+      "description": "toolchain-abstraction",
+      "prompt": "Create architectural documentation for the toolchain abstraction layer that bridges MSVC and Clang instrumentation approaches. Explain the dual-path design: MSVC uses /Gh compiler hooks generating _penter/_pexit callbacks through MASM-generated assembly stubs, while Clang uses -finstrument-functions with __cyg_profile_func_enter/exit shims. Document how both paths converge on the shared bltrace_hook.c implementation. Detail the conditional compilation strategy in CMakeLists.txt that selects appropriate build configurations. Explain the assembly hook mechanism in bltrace_penter.asm and how it preserves registers and calls into C code. Include troubleshooting guidance for toolchain-specific issues and compatibility considerations across different compiler versions.",
+      "progress_status": "completed",
+      "dependent_files": "bltrace/bltrace_clang_shim.c,bltrace/bltrace_penter.asm,bltrace/CMakeLists.txt",
+      "gmt_create": "2026-11-08T04:08:34Z",
+      "gmt_modified": "2026-11-08T04:08:34Z",
+      "parent_id": "49cc9db7-1d1f-40a2-9def-17584c6d6aa3",
+      "layer_level": 1,
+      "order": 2,
+      "kk_dependent_files": [
+        "bltrace/bltrace_clang_shim.c",
+        "bltrace/bltrace_penter.asm",
+        "bltrace/CMakeLists.txt"
+      ]
+    },
+    {
+      "id": "a3792810-d3f1-454d-a1bd-a83623e640d0",
+      "repo_id": "5f11ef3f-4459-a376-0ecc-b974df3903a2",
+      "name": "MSVC vs Clang Implementations",
+      "description": "msvc-vs-clang-implementations",
+      "prompt": "Create detailed documentation comparing the MSVC and Clang implementations of the bltrace library. Explain the architectural differences between MSVC's /Gh compiler option generating _penter/_pexit hooks versus Clang's -finstrument-functions providing __cyg_profile_func_enter/exit callbacks. Document the MASM assembly code in bltrace_penter.asm that implements Windows-specific hook infrastructure, and the Clang shim layer in bltrace_clang_shim.c that adapts Clang instrumentation to the common interface. Detail the conditional compilation logic in CMakeLists.txt that selects the appropriate implementation based on the compiler toolchain. Include performance comparisons between the two approaches, platform-specific limitations, debugging capabilities, and migration considerations when switching between compilers.",
+      "progress_status": "completed",
+      "dependent_files": "bltrace/bltrace_clang_shim.c,bltrace/bltrace_penter.asm,bltrace/CMakeLists.txt",
+      "gmt_create": "2026-11-08T04:08:34Z",
+      "gmt_modified": "2026-11-08T04:08:34Z",
+      "parent_id": "6f2ad8ed-26dc-493e-962e-de8ea945e8c6",
+      "layer_level": 1,
+      "order": 2,
+      "kk_dependent_files": [
+        "bltrace/bltrace_clang_shim.c",
+        "bltrace/bltrace_penter.asm",
+        "bltrace/CMakeLists.txt"
+      ]
+    },
+    {
+      "id": "51279f75-d41c-4e91-83b7-f3e680ae59b0",
+      "repo_id": "5f11ef3f-4459-a376-0ecc-b974df3903a2",
+      "name": "Build System Integration",
+      "description": "build-system-integration",
+      "prompt": "Document the CMake-based build system integration pattern used throughout the Blender project. Explain how tracing flags propagate from the root CMakeLists.txt down through the internal modules and source directories. Detail the target-specific instrumentation setup showing how the creator target links against the instrumentation libraries. Document the BTRACE_GH and BTRACE_CLANG CMake options and their effects on conditional compilation. Explain how the build system excludes instrumentation code itself from being traced to prevent infinite recursion. Include guidance for extending the build integration to support additional targets or custom instrumentation configurations.",
+      "progress_status": "completed",
+      "dependent_files": "CMakeLists.txt,intern/CMakeLists.txt,source/CMakeLists.txt,source/creator/CMakeLists.txt",
+      "gmt_create": "2026-11-08T04:08:34Z",
+      "gmt_modified": "2026-11-08T04:08:34Z",
+      "parent_id": "49cc9db7-1d1f-40a2-9def-17584c6d6aa3",
+      "layer_level": 1,
+      "order": 3,
+      "kk_dependent_files": [
+        "CMakeLists.txt",
+        "intern/CMakeLists.txt",
+        "source/CMakeLists.txt",
+        "source/creator/CMakeLists.txt"
+      ]
+    },
+    {
+      "id": "6f2ad8ed-26dc-493e-962e-de8ea945e8c6",
+      "repo_id": "5f11ef3f-4459-a376-0ecc-b974df3903a2",
+      "name": "Tracing Library (bltrace)",
+      "description": "tracing-library",
+      "prompt": "Develop detailed content for the bltrace tracing library. Thoroughly explain the function hooking mechanisms supporting both MSVC /Gh hooks and Clang -finstrument-functions. Document the call graph recording system using RVAs (Relative Virtual Addresses) and edge tables, timing measurement implementation with QueryPerformanceCounter, and thread-local stack management for hierarchical trace reconstruction. Detail the slot table allocation algorithm using hash-based collision resolution with atomic operations. Explain the data structures including TlsFrame, TlsStack, TimingSlot, and the serialized output format. Cover the MSVC-specific implementation with MASM-generated _penter/_pexit stubs versus the Clang shim approach. Include practical examples of how traces are collected, managed, and dumped. Address performance considerations including the impact of hooking overhead, memory allocation strategies, and the trade-offs between different slot table sizes.",
+      "progress_status": "completed",
+      "dependent_files": "bltrace/bltrace_hook.c,bltrace/bltrace_clang_shim.c,bltrace/bltrace_penter.asm,bltrace/CMakeLists.txt",
+      "gmt_create": "2026-11-08T04:08:34Z",
+      "gmt_modified": "2026-11-08T04:08:34Z",
+      "order": 3,
+      "kk_dependent_files": [
+        "bltrace/bltrace_hook.c",
+        "bltrace/bltrace_clang_shim.c",
+        "bltrace/bltrace_penter.asm",
+        "bltrace/CMakeLists.txt"
+      ]
+    },
+    {
+      "id": "a24685eb-5056-4bd5-9f98-983d1f6e4d19",
+      "repo_id": "5f11ef3f-4459-a376-0ecc-b974df3903a2",
+      "name": "Output Formats and Serialization",
+      "description": "output-formats-serialization",
+      "prompt": "Document the serialized output formats produced by bltrace's dump functions. Explain the binary format used by bltrace_dump(), bltrace_dump_edges(), and bltrace_dump_timings() functions. Detail the record structures for function edges (caller-callee pairs), timing measurements (self time and inclusive time), and metadata headers. Describe the file layout, byte ordering, version compatibility, and parsing requirements for downstream tools. Include practical examples of generated output files, hex dumps showing the binary format, and step-by-step instructions for writing parsers. Address the relationship between in-memory data structures and their serialized representations, compression considerations, and optimization strategies for large trace datasets.",
+      "progress_status": "completed",
+      "dependent_files": "bltrace/bltrace_hook.c",
+      "gmt_create": "2026-11-08T04:08:34Z",
+      "gmt_modified": "2026-11-08T04:08:34Z",
+      "parent_id": "6f2ad8ed-26dc-493e-962e-de8ea945e8c6",
+      "layer_level": 1,
+      "order": 3,
+      "kk_dependent_files": [
+        "bltrace/bltrace_hook.c"
+      ]
+    },
+    {
+      "id": "8e48a6ab-9804-4bd6-b856-6e222f246da3",
+      "repo_id": "5f11ef3f-4459-a376-0ecc-b974df3903a2",
+      "name": "Coverage Control (covtrace)",
+      "description": "coverage-control",
+      "prompt": "Develop detailed content for the covtrace coverage window control system. Explain how it acts as a public API facade over both bltrace and LLVM coverage runtime, managing profile window lifecycles through __llvm_profile_set_filename, __llvm_profile_reset_counters, and __llvm_profile_write_file. Document the window management pattern of writing current coverage data and redirecting future output to prevent file overwrites. Detail the exported functions covtrace_arm, covtrace_dump, and covtrace_disarm, explaining their parameters and return values. Cover the integration with LLVM's -fprofile-instr-generate compiler flag and profraw file format. Include examples of typical usage patterns for coverage testing workflows, such as configuring output paths, capturing coverage windows during test execution, and controlling exit-time file writing. Address the relationship between coverage windows and function tracing, explaining how both systems can work together for comprehensive performance and coverage analysis.",
+      "progress_status": "completed",
+      "dependent_files": "covtrace/covtrace_hook.c,covtrace/CMakeLists.txt",
+      "gmt_create": "2026-11-08T04:08:34Z",
+      "gmt_modified": "2026-11-08T04:08:34Z",
+      "order": 4,
+      "kk_dependent_files": [
+        "covtrace/covtrace_hook.c",
+        "covtrace/CMakeLists.txt"
+      ]
+    },
+    {
+      "id": "992e544b-7b34-4ace-9f64-ad6193ce703a",
+      "repo_id": "5f11ef3f-4459-a376-0ecc-b974df3903a2",
+      "name": "Build System Integration",
+      "description": "build-integration",
+      "prompt": "Create comprehensive documentation for the CMake build system integration. Explain how tracing flags propagate through Blender's CMake hierarchy from the root configuration down to internal modules and the main Blender executable. Document the conditional compilation logic for BTRACE_GH (MSVC /Gh /GH flags) and BTRACE_CLANG (-finstrument-functions-after-inlining) options. Detail how the bltrace static library is built differently for MSVC (with MASM assembly) versus Clang (with C shim functions). Explain the exclusion of instrumentation from traced code itself to prevent recursive hooking and coverage pollution. Cover the target-specific setup in intern and source directories, showing how the same flags are applied consistently across all Blender components. Include troubleshooting guidance for common build issues such as symbol export problems, linker errors with MASM objects, and compiler version compatibility. Provide examples of extending the integration to new targets or custom build configurations.",
+      "progress_status": "completed",
+      "dependent_files": "intern/CMakeLists.txt,source/CMakeLists.txt,source/creator/CMakeLists.txt,bltrace/CMakeLists.txt",
+      "gmt_create": "2026-11-08T04:08:34Z",
+      "gmt_modified": "2026-11-08T04:08:34Z",
+      "order": 5,
+      "kk_dependent_files": [
+        "intern/CMakeLists.txt",
+        "source/CMakeLists.txt",
+        "source/creator/CMakeLists.txt",
+        "bltrace/CMakeLists.txt"
+      ]
+    },
+    {
+      "id": "1aecba84-a89e-4fcc-9144-ac86bcd8ce13",
+      "repo_id": "5f11ef3f-4459-a376-0ecc-b974df3903a2",
+      "name": "API Reference",
+      "description": "api-reference",
+      "prompt": "Create API documentation for the public interfaces exposed by the Blender Build Instrumentation Extension. Document all bltrace functions including bltrace_arm(), bltrace_disarm(), bltrace_enter(), bltrace_exit(), bltrace_dump(), bltrace_dump_edges(), bltrace_dump_timings(), bltrace_count(), bltrace_edge_count(), and bltrace_timing_count() with their parameters, return values, and usage patterns. Document covtrace functions including covtrace_arm(), covtrace_dump(), covtrace_disarm(), and the covtrace_calls_* variants that wrap bltrace functionality. For each function, specify preconditions, postconditions, thread safety guarantees, and error conditions. Include concrete code examples demonstrating typical usage patterns such as enabling/disabling tracing around specific operations, dumping trace data to files, and managing coverage windows. Document the data formats produced by dump functions, including the serialized structure of edge tables, timing records, and function tables. Address performance implications of each API call and provide best practices for minimizing overhead in production code paths.",
+      "progress_status": "completed",
+      "dependent_files": "bltrace/bltrace_hook.c,covtrace/covtrace_hook.c",
+      "gmt_create": "2026-11-08T04:08:34Z",
+      "gmt_modified": "2026-11-08T04:08:34Z",
+      "order": 6,
+      "kk_dependent_files": [
+        "bltrace/bltrace_hook.c",
+        "covtrace/covtrace_hook.c"
+      ]
+    }
+  ],
+  "wiki_items": [
+    {
+      "id": "0afef3f7-c1b1-407c-b876-b518cfed4b43",
+      "catalog_id": "0afef3f7-c1b1-407c-b876-b518cfed4b43",
+      "title": "Bltrace API",
+      "description": "bltrace-api",
+      "extend": "{}",
+      "progress_status": "completed",
+      "repo_id": "5f11ef3f-4459-a376-0ecc-b974df3903a2",
+      "reference_count": 0,
+      "gmt_create": "2026-11-08T04:08:34Z",
+      "gmt_modified": "2026-11-08T04:08:34Z"
+    },
+    {
+      "id": "7075685f-4722-4f60-894f-7551fdf502c5",
+      "catalog_id": "7075685f-4722-4f60-894f-7551fdf502c5",
+      "title": "Project Overview",
+      "description": "project-overview",
+      "extend": "{}",
+      "progress_status": "completed",
+      "repo_id": "5f11ef3f-4459-a376-0ecc-b974df3903a2",
+      "reference_count": 0,
+      "gmt_create": "2026-11-08T04:08:34Z",
+      "gmt_modified": "2026-11-08T04:08:34Z"
+    },
+    {
+      "id": "a90416b8-6e46-4cc6-8978-3726cce23457",
+      "catalog_id": "a90416b8-6e46-4cc6-8978-3726cce23457",
+      "title": "Tracing Engine (bltrace)",
+      "description": "tracing-engine",
+      "extend": "{}",
+      "progress_status": "completed",
+      "repo_id": "5f11ef3f-4459-a376-0ecc-b974df3903a2",
+      "reference_count": 0,
+      "gmt_create": "2026-11-08T04:08:34Z",
+      "gmt_modified": "2026-11-08T04:08:34Z"
+    },
+    {
+      "id": "fcf019e8-5940-4472-a22b-c738c6d11d76",
+      "catalog_id": "fcf019e8-5940-4472-a22b-c738c6d11d76",
+      "title": "Function Hooking Mechanisms",
+      "description": "function-hooking-mechanisms",
+      "extend": "{}",
+      "progress_status": "completed",
+      "repo_id": "5f11ef3f-4459-a376-0ecc-b974df3903a2",
+      "reference_count": 0,
+      "gmt_create": "2026-11-08T04:08:34Z",
+      "gmt_modified": "2026-11-08T04:08:34Z"
+    },
+    {
+      "id": "4e47bd44-89a9-4d27-a271-685b0613bc72",
+      "catalog_id": "4e47bd44-89a9-4d27-a271-685b0613bc72",
+      "title": "Covtrace API",
+      "description": "covtrace-api",
+      "extend": "{}",
+      "progress_status": "completed",
+      "repo_id": "5f11ef3f-4459-a376-0ecc-b974df3903a2",
+      "reference_count": 0,
+      "gmt_create": "2026-11-08T04:08:34Z",
+      "gmt_modified": "2026-11-08T04:08:34Z"
+    },
+    {
+      "id": "8b9028ba-448c-4d70-8961-706fca153d2f",
+      "catalog_id": "8b9028ba-448c-4d70-8961-706fca153d2f",
+      "title": "Coverage Control (covtrace)",
+      "description": "coverage-control",
+      "extend": "{}",
+      "progress_status": "completed",
+      "repo_id": "5f11ef3f-4459-a376-0ecc-b974df3903a2",
+      "reference_count": 0,
+      "gmt_create": "2026-11-08T04:08:34Z",
+      "gmt_modified": "2026-11-08T04:08:34Z"
+    },
+    {
+      "id": "c532e303-c49e-43f0-933f-5abb9524bc05",
+      "catalog_id": "c532e303-c49e-43f0-933f-5abb9524bc05",
+      "title": "Getting Started",
+      "description": "getting-started",
+      "extend": "{}",
+      "progress_status": "completed",
+      "repo_id": "5f11ef3f-4459-a376-0ecc-b974df3903a2",
+      "reference_count": 0,
+      "gmt_create": "2026-11-08T04:08:34Z",
+      "gmt_modified": "2026-11-08T04:08:34Z"
+    },
+    {
+      "id": "d468d507-566d-46ba-8723-ead29b0486ed",
+      "catalog_id": "d468d507-566d-46ba-8723-ead29b0486ed",
+      "title": "Data Structures and Algorithms",
+      "description": "data-structures-algorithms",
+      "extend": "{}",
+      "progress_status": "completed",
+      "repo_id": "5f11ef3f-4459-a376-0ecc-b974df3903a2",
+      "reference_count": 0,
+      "gmt_create": "2026-11-08T04:08:34Z",
+      "gmt_modified": "2026-11-08T04:08:34Z"
+    },
+    {
+      "id": "49cc9db7-1d1f-40a2-9def-17584c6d6aa3",
+      "catalog_id": "49cc9db7-1d1f-40a2-9def-17584c6d6aa3",
+      "title": "Architecture Overview",
+      "description": "architecture",
+      "extend": "{}",
+      "progress_status": "completed",
+      "repo_id": "5f11ef3f-4459-a376-0ecc-b974df3903a2",
+      "reference_count": 0,
+      "gmt_create": "2026-11-08T04:08:34Z",
+      "gmt_modified": "2026-11-08T04:08:34Z"
+    },
+    {
+      "id": "72b9518d-c20c-4c9b-a488-e3c627a30b67",
+      "catalog_id": "72b9518d-c20c-4c9b-a488-e3c627a30b67",
+      "title": "Toolchain Abstraction Layer",
+      "description": "toolchain-abstraction",
+      "extend": "{}",
+      "progress_status": "completed",
+      "repo_id": "5f11ef3f-4459-a376-0ecc-b974df3903a2",
+      "reference_count": 0,
+      "gmt_create": "2026-11-08T04:08:34Z",
+      "gmt_modified": "2026-11-08T04:08:34Z"
+    },
+    {
+      "id": "a3792810-d3f1-454d-a1bd-a83623e640d0",
+      "catalog_id": "a3792810-d3f1-454d-a1bd-a83623e640d0",
+      "title": "MSVC vs Clang Implementations",
+      "description": "msvc-vs-clang-implementations",
+      "extend": "{}",
+      "progress_status": "completed",
+      "repo_id": "5f11ef3f-4459-a376-0ecc-b974df3903a2",
+      "reference_count": 0,
+      "gmt_create": "2026-11-08T04:08:34Z",
+      "gmt_modified": "2026-11-08T04:08:34Z"
+    },
+    {
+      "id": "51279f75-d41c-4e91-83b7-f3e680ae59b0",
+      "catalog_id": "51279f75-d41c-4e91-83b7-f3e680ae59b0",
+      "title": "Build System Integration",
+      "description": "build-system-integration",
+      "extend": "{}",
+      "progress_status": "completed",
+      "repo_id": "5f11ef3f-4459-a376-0ecc-b974df3903a2",
+      "reference_count": 0,
+      "gmt_create": "2026-11-08T04:08:34Z",
+      "gmt_modified": "2026-11-08T04:08:34Z"
+    },
+    {
+      "id": "6f2ad8ed-26dc-493e-962e-de8ea945e8c6",
+      "catalog_id": "6f2ad8ed-26dc-493e-962e-de8ea945e8c6",
+      "title": "Tracing Library (bltrace)",
+      "description": "tracing-library",
+      "extend": "{}",
+      "progress_status": "completed",
+      "repo_id": "5f11ef3f-4459-a376-0ecc-b974df3903a2",
+      "reference_count": 0,
+      "gmt_create": "2026-11-08T04:08:34Z",
+      "gmt_modified": "2026-11-08T04:08:34Z"
+    },
+    {
+      "id": "a24685eb-5056-4bd5-9f98-983d1f6e4d19",
+      "catalog_id": "a24685eb-5056-4bd5-9f98-983d1f6e4d19",
+      "title": "Output Formats and Serialization",
+      "description": "output-formats-serialization",
+      "extend": "{}",
+      "progress_status": "completed",
+      "repo_id": "5f11ef3f-4459-a376-0ecc-b974df3903a2",
+      "reference_count": 0,
+      "gmt_create": "2026-11-08T04:08:34Z",
+      "gmt_modified": "2026-11-08T04:08:34Z"
+    },
+    {
+      "id": "8e48a6ab-9804-4bd6-b856-6e222f246da3",
+      "catalog_id": "8e48a6ab-9804-4bd6-b856-6e222f246da3",
+      "title": "Coverage Control (covtrace)",
+      "description": "coverage-control",
+      "extend": "{}",
+      "progress_status": "completed",
+      "repo_id": "5f11ef3f-4459-a376-0ecc-b974df3903a2",
+      "reference_count": 0,
+      "gmt_create": "2026-11-08T04:08:34Z",
+      "gmt_modified": "2026-11-08T04:08:34Z"
+    },
+    {
+      "id": "992e544b-7b34-4ace-9f64-ad6193ce703a",
+      "catalog_id": "992e544b-7b34-4ace-9f64-ad6193ce703a",
+      "title": "Build System Integration",
+      "description": "build-integration",
+      "extend": "{}",
+      "progress_status": "completed",
+      "repo_id": "5f11ef3f-4459-a376-0ecc-b974df3903a2",
+      "reference_count": 0,
+      "gmt_create": "2026-11-08T04:08:34Z",
+      "gmt_modified": "2026-11-08T04:08:34Z"
+    },
+    {
+      "id": "1aecba84-a89e-4fcc-9144-ac86bcd8ce13",
+      "catalog_id": "1aecba84-a89e-4fcc-9144-ac86bcd8ce13",
+      "title": "API Reference",
+      "description": "api-reference",
+      "extend": "{}",
+      "progress_status": "completed",
+      "repo_id": "5f11ef3f-4459-a376-0ecc-b974df3903a2",
+      "reference_count": 0,
+      "gmt_create": "2026-11-08T04:08:34Z",
+      "gmt_modified": "2026-11-08T04:08:34Z"
+    }
+  ],
+  "knowledge_relations": [
+    {
+      "id": 1,
+      "source_id": "1aecba84-a89e-4fcc-9144-ac86bcd8ce13",
+      "target_id": "0afef3f7-c1b1-407c-b876-b518cfed4b43",
+      "source_type": "WIKI_ITEM",
+      "target_type": "WIKI_ITEM",
+      "relationship_type": "PARENT_CHILD",
+      "gmt_create": "2026-11-08T04:08:34Z",
+      "gmt_modified": "2026-11-08T04:08:34Z"
+    },
+    {
+      "id": 2,
+      "source_id": "49cc9db7-1d1f-40a2-9def-17584c6d6aa3",
+      "target_id": "a90416b8-6e46-4cc6-8978-3726cce23457",
+      "source_type": "WIKI_ITEM",
+      "target_type": "WIKI_ITEM",
+      "relationship_type": "PARENT_CHILD",
+      "gmt_create": "2026-11-08T04:08:34Z",
+      "gmt_modified": "2026-11-08T04:08:34Z"
+    },
+    {
+      "id": 3,
+      "source_id": "6f2ad8ed-26dc-493e-962e-de8ea945e8c6",
+      "target_id": "fcf019e8-5940-4472-a22b-c738c6d11d76",
+      "source_type": "WIKI_ITEM",
+      "target_type": "WIKI_ITEM",
+      "relationship_type": "PARENT_CHILD",
+      "gmt_create": "2026-11-08T04:08:34Z",
+      "gmt_modified": "2026-11-08T04:08:34Z"
+    },
+    {
+      "id": 4,
+      "source_id": "1aecba84-a89e-4fcc-9144-ac86bcd8ce13",
+      "target_id": "4e47bd44-89a9-4d27-a271-685b0613bc72",
+      "source_type": "WIKI_ITEM",
+      "target_type": "WIKI_ITEM",
+      "relationship_type": "PARENT_CHILD",
+      "gmt_create": "2026-11-08T04:08:34Z",
+      "gmt_modified": "2026-11-08T04:08:34Z"
+    },
+    {
+      "id": 5,
+      "source_id": "49cc9db7-1d1f-40a2-9def-17584c6d6aa3",
+      "target_id": "8b9028ba-448c-4d70-8961-706fca153d2f",
+      "source_type": "WIKI_ITEM",
+      "target_type": "WIKI_ITEM",
+      "relationship_type": "PARENT_CHILD",
+      "gmt_create": "2026-11-08T04:08:34Z",
+      "gmt_modified": "2026-11-08T04:08:34Z"
+    },
+    {
+      "id": 6,
+      "source_id": "6f2ad8ed-26dc-493e-962e-de8ea945e8c6",
+      "target_id": "d468d507-566d-46ba-8723-ead29b0486ed",
+      "source_type": "WIKI_ITEM",
+      "target_type": "WIKI_ITEM",
+      "relationship_type": "PARENT_CHILD",
+      "gmt_create": "2026-11-08T04:08:34Z",
+      "gmt_modified": "2026-11-08T04:08:34Z"
+    },
+    {
+      "id": 7,
+      "source_id": "49cc9db7-1d1f-40a2-9def-17584c6d6aa3",
+      "target_id": "72b9518d-c20c-4c9b-a488-e3c627a30b67",
+      "source_type": "WIKI_ITEM",
+      "target_type": "WIKI_ITEM",
+      "relationship_type": "PARENT_CHILD",
+      "gmt_create": "2026-11-08T04:08:34Z",
+      "gmt_modified": "2026-11-08T04:08:34Z"
+    },
+    {
+      "id": 8,
+      "source_id": "6f2ad8ed-26dc-493e-962e-de8ea945e8c6",
+      "target_id": "a3792810-d3f1-454d-a1bd-a83623e640d0",
+      "source_type": "WIKI_ITEM",
+      "target_type": "WIKI_ITEM",
+      "relationship_type": "PARENT_CHILD",
+      "gmt_create": "2026-11-08T04:08:34Z",
+      "gmt_modified": "2026-11-08T04:08:34Z"
+    },
+    {
+      "id": 9,
+      "source_id": "49cc9db7-1d1f-40a2-9def-17584c6d6aa3",
+      "target_id": "51279f75-d41c-4e91-83b7-f3e680ae59b0",
+      "source_type": "WIKI_ITEM",
+      "target_type": "WIKI_ITEM",
+      "relationship_type": "PARENT_CHILD",
+      "gmt_create": "2026-11-08T04:08:34Z",
+      "gmt_modified": "2026-11-08T04:08:34Z"
+    },
+    {
+      "id": 10,
+      "source_id": "6f2ad8ed-26dc-493e-962e-de8ea945e8c6",
+      "target_id": "a24685eb-5056-4bd5-9f98-983d1f6e4d19",
+      "source_type": "WIKI_ITEM",
+      "target_type": "WIKI_ITEM",
+      "relationship_type": "PARENT_CHILD",
+      "gmt_create": "2026-11-08T04:08:34Z",
+      "gmt_modified": "2026-11-08T04:08:34Z"
+    }
+  ]
+}

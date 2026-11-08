@@ -1,0 +1,1 @@
+In-source generation is blocked unless `WITH_IN_SOURCE_BUILD` is defined; the error message instructs users to run from a sibling directory such as `mkdir cmake-make && cd cmake-make && cmake ../blender`.

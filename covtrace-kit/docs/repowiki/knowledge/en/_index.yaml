@@ -1,0 +1,16 @@
+# 知识卡导出索引文件
+schema_version: 1
+locale: en
+commit: local
+branch: local
+exported_at: "2026-11-08T04:04:29Z"
+modules:
+    root:
+        dir_name: Blender Root CMake Build Configuration
+        title: Blender Root CMake Build Configuration
+        scope:
+            - CMakeLists.txt
+        source_files: []
+        children: []
+        depends_on: []
+        related_to: []

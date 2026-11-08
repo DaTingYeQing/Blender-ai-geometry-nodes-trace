@@ -1,0 +1,1 @@
+Top-level CMake entry point that validates the build environment, configures policies and compiler requirements, sets output directories, and bootstraps Blender's modular build system.
